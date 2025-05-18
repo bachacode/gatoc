@@ -20,6 +20,8 @@ func init() {
 
 func main() {
 	token := os.Getenv("TEST_TOKEN")
+	appId := os.Getenv("TEST_CLIENT_ID")
+	guildId := os.Getenv("TEST_GUILD_ID")
 
 	err := bot.Init(token)
 	if err != nil {
@@ -33,6 +35,12 @@ func main() {
 		return
 	}
 
+	err = bot.RegisterCommands(appId, guildId)
+	if err != nil {
+		fmt.Println("error registering commands,", err)
+		return
+	}
+
 	err = bot.Start()
 	if err != nil {
 		fmt.Println("error opening connection,", err)
@@ -43,6 +51,12 @@ func main() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
+
+	err = bot.UnregisterCommands(guildId)
+	if err != nil {
+		fmt.Println("error unregistering commands,", err)
+		return
+	}
 
 	err = bot.Close()
 	if err != nil {

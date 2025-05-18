@@ -2,7 +2,9 @@ package bot
 
 import (
 	"errors"
+	"fmt"
 
+	"github.com/bachacode/go-discord-bot/internal/commands"
 	"github.com/bachacode/go-discord-bot/internal/events"
 	"github.com/bwmarrin/discordgo"
 )
@@ -27,6 +29,35 @@ func SetEventHandlers() error {
 
 	session.AddHandler(events.ReadyHandler)
 	session.AddHandler(events.MessageCreateHandler)
+	session.AddHandler(events.InteractionCreateHandler)
+	return nil
+}
+
+func RegisterCommands(appId string, guildId string) error {
+	for _, cmd := range commands.Commands {
+		_, err := session.ApplicationCommandCreate(appId, guildId, cmd.Metadata)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func UnregisterCommands(guildId string) error {
+	appId := session.State.User.ID
+
+	commands, err := session.ApplicationCommands(appId, guildId)
+	if err != nil {
+		return err
+	}
+
+	for _, cmd := range commands {
+		err := session.ApplicationCommandDelete(appId, guildId, cmd.ID)
+		if err != nil {
+			fmt.Printf("Error deleting command %s: %v\n", cmd.Name, err)
+		}
+	}
+
 	return nil
 }
 
