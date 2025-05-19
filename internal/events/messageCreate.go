@@ -10,7 +10,7 @@ func init() {
 	register(messageCreate)
 }
 
-var messageCreate EventHandler = EventHandler{
+var messageCreate Event = Event{
 	Name: "Message Create",
 	Once: false,
 	Handler: func(s *discordgo.Session, m *discordgo.MessageCreate) {

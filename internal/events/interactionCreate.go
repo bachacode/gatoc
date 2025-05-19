@@ -9,7 +9,7 @@ func init() {
 	register(interactionCreate)
 }
 
-var interactionCreate EventHandler = EventHandler{
+var interactionCreate Event = Event{
 	Name: "Interaction Create / Slash Command Handling",
 	Once: false,
 	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {

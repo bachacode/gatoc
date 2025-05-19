@@ -1,17 +1,17 @@
 package events
 
-type EventHandler struct {
+type Event struct {
 	Name    string
 	Once    bool
 	Handler interface{}
 }
 
-var registry []EventHandler
+var registry []Event
 
-func register(event EventHandler) {
+func register(event Event) {
 	registry = append(registry, event)
 }
 
-func All() []EventHandler {
+func All() []Event {
 	return registry
 }

@@ -18,7 +18,7 @@ type bot struct {
 	guildID  string
 	intents  discordgo.Intent
 	commands map[string]commands.SlashCommand
-	events   []events.EventHandler
+	events   []events.Event
 	logger   *log.Logger
 }
 
