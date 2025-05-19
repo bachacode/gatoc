@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -18,25 +17,27 @@ func init() {
 }
 
 func main() {
+	logger := log.New(os.Stdout, "[MAIN] ", log.LstdFlags)
+
 	token := os.Getenv("TEST_TOKEN")
 	appID := os.Getenv("TEST_CLIENT_ID")
 	guildID := os.Getenv("TEST_GUILD_ID")
-
 	b, err := bot.New(token, appID, guildID)
+
 	if err != nil {
-		fmt.Println("error creating Discord session,", err)
+		logger.Fatalf("Failed to create bot: %v", err)
 		return
 	}
 
 	err = b.Setup(discordgo.IntentsGuilds | discordgo.IntentsGuildVoiceStates)
 	if err != nil {
-		fmt.Println("error setting up the bot,", err)
+		logger.Fatalf("Failed to setup bot: %v", err)
 		return
 	}
 
 	err = b.Run()
 	if err != nil {
-		fmt.Println("error running the bot,", err)
+		logger.Fatalf("Failed to run bot: %v", err)
 		return
 	}
 }

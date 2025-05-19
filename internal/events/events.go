@@ -1,6 +1,7 @@
 package events
 
 type EventHandler struct {
+	Name    string
 	Once    bool
 	Handler interface{}
 }
