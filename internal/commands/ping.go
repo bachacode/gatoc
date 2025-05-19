@@ -12,16 +12,8 @@ func init() {
 
 var ping SlashCommand = SlashCommand{
 	Metadata: &discordgo.ApplicationCommand{
-		Name: "gaplay",
-		Options: []*discordgo.ApplicationCommandOption{
-			{
-				Type:        discordgo.ApplicationCommandOptionString,
-				Name:        "query",
-				Description: "La URL de la canción",
-				Required:    true,
-			},
-		},
-		Description: "Reproduce una canción de Youtube.",
+		Name:        "gatoping",
+		Description: "Devuelve la latencia en MS",
 	},
 	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		latency := s.HeartbeatLatency().Milliseconds()
