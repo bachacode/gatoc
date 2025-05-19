@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/bachacode/go-discord-bot/internal/bot"
+	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
 )
 
@@ -20,47 +19,24 @@ func init() {
 
 func main() {
 	token := os.Getenv("TEST_TOKEN")
-	appId := os.Getenv("TEST_CLIENT_ID")
-	guildId := os.Getenv("TEST_GUILD_ID")
+	appID := os.Getenv("TEST_CLIENT_ID")
+	guildID := os.Getenv("TEST_GUILD_ID")
 
-	err := bot.Init(token)
+	b, err := bot.New(token, appID, guildID)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
 		return
 	}
 
-	err = bot.SetEventHandlers()
+	err = b.Setup(discordgo.IntentsGuilds | discordgo.IntentsGuildVoiceStates)
 	if err != nil {
-		fmt.Println("error setting event handlers,", err)
+		fmt.Println("error setting up the bot,", err)
 		return
 	}
 
-	err = bot.RegisterCommands(appId, guildId)
+	err = b.Run()
 	if err != nil {
-		fmt.Println("error registering commands,", err)
-		return
-	}
-
-	err = bot.Start()
-	if err != nil {
-		fmt.Println("error opening connection,", err)
-		return
-	}
-
-	fmt.Println("Bot is now running. Press CTRL-C to exit.")
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-sc
-
-	err = bot.UnregisterCommands(guildId)
-	if err != nil {
-		fmt.Println("error unregistering commands,", err)
-		return
-	}
-
-	err = bot.Close()
-	if err != nil {
-		fmt.Println("error closing connection,", err)
+		fmt.Println("error running the bot,", err)
 		return
 	}
 }

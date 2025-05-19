@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -11,27 +9,215 @@ type SlashCommand struct {
 	Handler  func(s *discordgo.Session, i *discordgo.InteractionCreate)
 }
 
-var Commands []SlashCommand = []SlashCommand{
-	{
-		Metadata: &discordgo.ApplicationCommand{
-			Name:        "gatoping",
-			Description: "Devuelve la latencia en MS",
-		},
-		Handler: PingCommandHandler,
-	},
+var registry = make(map[string]SlashCommand)
+
+func register(name string, cmd SlashCommand) {
+	registry[name] = cmd
 }
 
-func PingCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	latency := s.HeartbeatLatency().Milliseconds()
+func Get(name string) SlashCommand {
+	return registry[name]
+}
 
-	// Follow up with the actual latency
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+func All() map[string]SlashCommand {
+	return registry
+}
+
+func getInteractionFailedResponse(content string) *discordgo.InteractionResponse {
+	var message = "Ha ocurrido un error ejecutando el comando."
+	if content != "" {
+		message = content
+	}
+	return &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: fmt.Sprintf("GatoPong! Latencia de %dms.", latency),
+			Content: message,
 		},
-	})
-	if err != nil {
-		fmt.Println("Error sending follow-up message:", err)
 	}
 }
+
+// func GaplayCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+// 	options := i.ApplicationCommandData().Options
+
+// 	var query string
+// 	for _, opt := range options {
+// 		if opt.Name == "query" {
+// 			query = opt.StringValue()
+// 		}
+// 	}
+
+// 	guildID := i.GuildID
+// 	userID := i.Member.User.ID
+// 	content := "Ok"
+// 	voiceState, err := s.State.VoiceState(guildID, userID)
+// 	if err != nil || voiceState == nil {
+// 		fmt.Println(voiceState, err)
+// 		s.InteractionRespond(
+// 			i.Interaction,
+// 			getInteractionFailedResponse("No estás en un canal de voz."),
+// 		)
+// 		return
+// 	}
+
+// 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+// 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+// 	})
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		content = "Ha ocurrido un error"
+// 		s.InteractionResponseEdit(
+// 			i.Interaction,
+// 			&discordgo.WebhookEdit{
+// 				Content: &content,
+// 			},
+// 		)
+// 		return
+// 	}
+
+// 	voiceConn, err := s.ChannelVoiceJoin(guildID, voiceState.ChannelID, false, true)
+// 	if err != nil {
+// 		fmt.Println("Error joining voice channel:", err)
+// 		content = "Ha ocurrido un error"
+// 		s.InteractionResponseEdit(
+// 			i.Interaction,
+// 			&discordgo.WebhookEdit{
+// 				Content: &content,
+// 			},
+// 		)
+// 		return
+// 	}
+// 	defer voiceConn.Disconnect()
+
+// 	if !strings.Contains(query, "v=") {
+// 		content = "Ha ocurrido un error"
+// 		s.InteractionResponseEdit(
+// 			i.Interaction,
+// 			&discordgo.WebhookEdit{
+// 				Content: &content,
+// 			},
+// 		)
+// 		return
+// 	}
+
+// 	videoID := strings.Split(query, "v=")[1]
+// 	stream, err := getAudioStreamURL(videoID)
+
+// 	if err != nil {
+// 		fmt.Println("failed on youtube download:", err)
+// 		content = "Ha ocurrido un error"
+// 		s.InteractionResponseEdit(
+// 			i.Interaction,
+// 			&discordgo.WebhookEdit{
+// 				Content: &content,
+// 			},
+// 		)
+// 	}
+
+// 	opusStream, err := convertMP4AToOpus(stream)
+// 	if err != nil {
+// 		fmt.Println("failed to convert to opus", err)
+// 		content = "Ha ocurrido un error"
+// 		s.InteractionResponseEdit(
+// 			i.Interaction,
+// 			&discordgo.WebhookEdit{
+// 				Content: &content,
+// 			},
+// 		)
+// 	}
+// 	defer opusStream.Close()
+
+// 	fmt.Println("Successfully started ffmpeg for Ogg Opus conversion. Reading stream...")
+// 	ogg, _, err := oggreader.NewWith(opusStream)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	buffer := make([]byte, 4096)
+
+// 	decoder := opus.NewDecoder()
+
+// 	for {
+// 		segments, _, err := ogg.ParseNextPage()
+
+// 		if errors.Is(err, io.EOF) {
+// 			break
+// 		} else if bytes.HasPrefix(segments[0], []byte("OpusTags")) {
+// 			continue
+// 		}
+
+// 		if err != nil {
+// 			panic(err)
+// 		}
+
+// 		for i, segment := range segments {
+// 			if _, _, err = decoder.Decode(segments[i], out); err != nil {
+// 				panic(err)
+// 			}
+// 		}
+// 	}
+
+// 	s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+// 		Content: &content,
+// 	})
+
+// }
+
+// func getAudioStreamURL(videoID string) (io.ReadCloser, error) {
+// 	client := youtube.Client{}
+
+// 	video, err := client.GetVideo(videoID)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	formats := video.Formats.WithAudioChannels() // only get videos with audio
+// 	stream, _, err := client.GetStream(video, &formats[0])
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return stream, nil
+// }
+
+// func convertMP4AToOpus(input io.ReadCloser) (io.ReadCloser, error) {
+// 	// Construct the ffmpeg command
+// 	cmd := exec.Command(
+// 		"ffmpeg",
+// 		"-i", "-", // Read from stdin
+// 		"-vn", // No video
+// 		"-acodec", "libopus",
+// 		"-f", "ogg", // Output to Ogg container
+// 		"-", // Output to stdout
+// 	)
+
+// 	// Set the input pipe to the provided io.ReadCloser
+// 	cmd.Stdin = input
+
+// 	// Get the output pipe
+// 	stdout, err := cmd.StdoutPipe()
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to create stdout pipe: %w", err)
+// 	}
+
+// 	// Get the error pipe (optional, but good for debugging)
+// 	stderr, err := cmd.StderrPipe()
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to create stderr pipe: %w", err)
+// 	}
+
+// 	// Start the ffmpeg command
+// 	if err := cmd.Start(); err != nil {
+// 		return nil, fmt.Errorf("failed to start ffmpeg: %w", err)
+// 	}
+
+// 	// Handle stderr in a goroutine to avoid blocking
+// 	go func() {
+// 		errOutput, _ := io.ReadAll(stderr)
+// 		if len(errOutput) > 0 {
+// 			fmt.Printf("ffmpeg stderr: %s\n", string(errOutput))
+// 		}
+// 	}()
+
+// 	// Return the stdout pipe as the opus audio stream
+// 	return stdout, nil
+// }

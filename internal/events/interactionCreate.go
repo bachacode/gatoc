@@ -5,15 +5,19 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func InteractionCreateHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if i.Type != discordgo.InteractionApplicationCommand {
-		return
-	}
+func init() {
+	register(interactionCreate)
+}
 
-	for _, cmd := range commands.Commands {
-		if i.ApplicationCommandData().Name == cmd.Metadata.Name {
-			cmd.Handler(s, i)
+var interactionCreate EventHandler = EventHandler{
+	Once: false,
+	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		if i.Type != discordgo.InteractionApplicationCommand {
 			return
 		}
-	}
+
+		cmd := commands.Get(i.ApplicationCommandData().Name)
+		cmd.Handler(s, i)
+		return
+	},
 }
