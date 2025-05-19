@@ -83,10 +83,16 @@ func (b *bot) registerCommands() error {
 }
 
 func (b *bot) UnregisterCommands() error {
-	for _, cmd := range b.commands {
-		err := b.session.ApplicationCommandDelete(b.appID, b.guildID, cmd.Metadata.ID)
+	commands, err := b.session.ApplicationCommands(b.appID, b.guildID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to fetch application commands:\n%v", err)
+	}
+
+	for _, cmd := range commands {
+		err := b.session.ApplicationCommandDelete(b.appID, b.guildID, cmd.ID)
 		if err != nil {
-			return fmt.Errorf("Failed to delete command: %s\n%v", cmd.Metadata.Name, err)
+			return fmt.Errorf("Failed to delete command: %s\n%v", cmd.Name, err)
 		}
 	}
 	b.logger.Printf("All commands were unregister successfully!")
