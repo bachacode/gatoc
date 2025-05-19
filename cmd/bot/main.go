@@ -37,7 +37,7 @@ func main() {
 
 	err = b.Run()
 	if err != nil {
-		logger.Fatalf("Failed to run bot: %v", err)
+		logger.Fatalln(err)
 		return
 	}
 }
