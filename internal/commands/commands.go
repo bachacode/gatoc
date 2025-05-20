@@ -1,12 +1,14 @@
 package commands
 
 import (
+	"errors"
+
 	"github.com/bwmarrin/discordgo"
 )
 
 type SlashCommand struct {
 	Metadata *discordgo.ApplicationCommand
-	Handler  func(s *discordgo.Session, i *discordgo.InteractionCreate)
+	Handler  func(s *discordgo.Session, i *discordgo.InteractionCreate) error
 }
 
 var registry = make(map[string]SlashCommand)
@@ -23,81 +25,54 @@ func All() map[string]SlashCommand {
 	return registry
 }
 
-func getInteractionFailedResponse(content string) *discordgo.InteractionResponse {
-	var message = "Ha ocurrido un error ejecutando el comando."
+func getInteractionFailedResponse(s *discordgo.Session, i *discordgo.InteractionCreate, content string) error {
+	message := "Ha ocurrido un error ejecutando el comando."
+
 	if content != "" {
 		message = content
 	}
-	return &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: message,
+	return s.InteractionRespond(
+		i.Interaction,
+		&discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: message,
+			},
 		},
-	}
+	)
 }
 
-// func GaplayCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
-// 	options := i.ApplicationCommandData().Options
+func deferReply(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+	return s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+	})
+}
 
-// 	var query string
-// 	for _, opt := range options {
-// 		if opt.Name == "query" {
-// 			query = opt.StringValue()
-// 		}
-// 	}
+func editDeferred(s *discordgo.Session, i *discordgo.InteractionCreate, content *string) error {
+	_, err := s.InteractionResponseEdit(
+		i.Interaction,
+		&discordgo.WebhookEdit{
+			Content: content,
+		},
+	)
 
-// 	guildID := i.GuildID
-// 	userID := i.Member.User.ID
-// 	content := "Ok"
-// 	voiceState, err := s.State.VoiceState(guildID, userID)
-// 	if err != nil || voiceState == nil {
-// 		fmt.Println(voiceState, err)
-// 		s.InteractionRespond(
-// 			i.Interaction,
-// 			getInteractionFailedResponse("No estás en un canal de voz."),
-// 		)
-// 		return
-// 	}
+	if err != nil {
+		return err
+	}
 
-// 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-// 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
-// 	})
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		content = "Ha ocurrido un error"
-// 		s.InteractionResponseEdit(
-// 			i.Interaction,
-// 			&discordgo.WebhookEdit{
-// 				Content: &content,
-// 			},
-// 		)
-// 		return
-// 	}
+	return nil
+}
 
-// 	voiceConn, err := s.ChannelVoiceJoin(guildID, voiceState.ChannelID, false, true)
-// 	if err != nil {
-// 		fmt.Println("Error joining voice channel:", err)
-// 		content = "Ha ocurrido un error"
-// 		s.InteractionResponseEdit(
-// 			i.Interaction,
-// 			&discordgo.WebhookEdit{
-// 				Content: &content,
-// 			},
-// 		)
-// 		return
-// 	}
-// 	defer voiceConn.Disconnect()
+func getInteractionOptionString(name string, i *discordgo.InteractionCreate) (string, error) {
+	options := i.ApplicationCommandData().Options
 
-// 	if !strings.Contains(query, "v=") {
-// 		content = "Ha ocurrido un error"
-// 		s.InteractionResponseEdit(
-// 			i.Interaction,
-// 			&discordgo.WebhookEdit{
-// 				Content: &content,
-// 			},
-// 		)
-// 		return
-// 	}
+	for _, opt := range options {
+		if opt.Name == name {
+			return opt.StringValue(), nil
+		}
+	}
+	return "", errors.New("Error option name does not exist in interaction options")
+}
 
 // 	videoID := strings.Split(query, "v=")[1]
 // 	stream, err := getAudioStreamURL(videoID)

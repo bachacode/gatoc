@@ -1,6 +1,8 @@
 package events
 
 import (
+	"fmt"
+
 	"github.com/bachacode/go-discord-bot/internal/commands"
 	"github.com/bwmarrin/discordgo"
 )
@@ -18,7 +20,9 @@ var interactionCreate Event = Event{
 		}
 
 		cmd := commands.Get(i.ApplicationCommandData().Name)
-		cmd.Handler(s, i)
+		if err := cmd.Handler(s, i); err != nil {
+			fmt.Printf("Failed to run interaction: %v\n", err)
+		}
 		return
 	},
 }

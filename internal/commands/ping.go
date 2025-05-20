@@ -15,7 +15,7 @@ var ping SlashCommand = SlashCommand{
 		Name:        "gatoping",
 		Description: "Devuelve la latencia en MS",
 	},
-	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 		latency := s.HeartbeatLatency().Milliseconds()
 
 		// Follow up with the actual latency
@@ -26,7 +26,9 @@ var ping SlashCommand = SlashCommand{
 			},
 		})
 		if err != nil {
-			fmt.Println("Error sending follow-up message:", err)
+			getInteractionFailedResponse(s, i, "")
+			return fmt.Errorf("Error responding to interaction: %v", err)
 		}
+		return nil
 	},
 }
