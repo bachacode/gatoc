@@ -18,10 +18,18 @@ func init() {
 
 func main() {
 	logger := log.New(os.Stdout, "[MAIN] ", log.LstdFlags)
+	env := os.Getenv("ENV")
 
-	token := os.Getenv("TEST_TOKEN")
-	appID := os.Getenv("TEST_CLIENT_ID")
-	guildID := os.Getenv("TEST_GUILD_ID")
+	var token, appID, guildID string
+	if env == "development" {
+		token = os.Getenv("TEST_TOKEN")
+		appID = os.Getenv("TEST_CLIENT_ID")
+	} else {
+		token = os.Getenv("TOKEN")
+		appID = os.Getenv("CLIENT_ID")
+	}
+	guildID = os.Getenv("TEST_GUILD_ID")
+
 	b, err := bot.New(token, appID, guildID)
 
 	if err != nil {
