@@ -1,9 +1,11 @@
 package events
 
+import "github.com/bachacode/go-discord-bot/internal/config"
+
 type Event struct {
 	Name    string
 	Once    bool
-	Handler interface{}
+	Handler func(cfg *config.BotConfig) interface{}
 }
 
 var registry []Event

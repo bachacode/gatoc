@@ -3,6 +3,7 @@ package events
 import (
 	"fmt"
 
+	"github.com/bachacode/go-discord-bot/internal/config"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -13,32 +14,34 @@ func init() {
 var messageCreate Event = Event{
 	Name: "Message Create",
 	Once: false,
-	Handler: func(s *discordgo.Session, m *discordgo.MessageCreate) {
-		if m.Author.ID == s.State.User.ID || m.Author.Bot {
-			return
-		}
+	Handler: func(cfg *config.BotConfig) interface{} {
+		return func(s *discordgo.Session, m *discordgo.MessageCreate) {
+			if m.Author.ID == s.State.User.ID || m.Author.Bot {
+				return
+			}
 
-		if m.Content != "ping" {
-			return
-		}
+			if m.Content != "ping" {
+				return
+			}
 
-		channel, err := s.Channel(m.ChannelID)
-		if err != nil {
-			fmt.Println("error creating channel:", err)
-			return
-		}
+			channel, err := s.Channel(m.ChannelID)
+			if err != nil {
+				fmt.Println("error creating channel:", err)
+				return
+			}
 
-		_, err = s.ChannelMessageSendReply(channel.ID, "Pong!", &discordgo.MessageReference{
-			MessageID: m.ID,
-			ChannelID: m.ChannelID,
-			GuildID:   m.GuildID,
-		})
-		if err != nil {
-			fmt.Println("error sending a reply message:", err)
-			s.ChannelMessageSend(
-				m.ChannelID,
-				"Ha ocurrido un error al responder a tu mensaje",
-			)
+			_, err = s.ChannelMessageSendReply(channel.ID, "Pong!", &discordgo.MessageReference{
+				MessageID: m.ID,
+				ChannelID: m.ChannelID,
+				GuildID:   m.GuildID,
+			})
+			if err != nil {
+				fmt.Println("error sending a reply message:", err)
+				s.ChannelMessageSend(
+					m.ChannelID,
+					"Ha ocurrido un error al responder a tu mensaje",
+				)
+			}
 		}
 	},
 }

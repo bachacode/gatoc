@@ -8,23 +8,23 @@ import (
 	"syscall"
 
 	"github.com/bachacode/go-discord-bot/internal/commands"
+	"github.com/bachacode/go-discord-bot/internal/config"
 	"github.com/bachacode/go-discord-bot/internal/events"
 	"github.com/bwmarrin/discordgo"
 )
 
 type bot struct {
-	session  *discordgo.Session
-	appID    string
-	guildID  string
+	session *discordgo.Session
+	*config.Config
 	intents  discordgo.Intent
 	commands map[string]commands.SlashCommand
 	events   []events.Event
 	logger   *log.Logger
 }
 
-func New(token string, appID string, guildID string) (*bot, error) {
+func New(cfg *config.Config) (*bot, error) {
 
-	s, err := discordgo.New("Bot " + token)
+	s, err := discordgo.New("Bot " + cfg.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -33,8 +33,7 @@ func New(token string, appID string, guildID string) (*bot, error) {
 
 	bot := &bot{
 		session:  s,
-		appID:    appID,
-		guildID:  guildID,
+		Config:   cfg,
 		commands: commands.All(),
 		events:   events.All(),
 		logger:   logger,
@@ -60,10 +59,10 @@ func (b *bot) Setup(intents discordgo.Intent) error {
 func (b *bot) setEventHandlers() {
 	for _, event := range b.events {
 		if event.Once {
-			b.session.AddHandlerOnce(event.Handler)
+			b.session.AddHandlerOnce(event.Handler(b.BotConfig))
 			b.logger.Printf("Registered event: %s as once event", event.Name)
 		} else {
-			b.session.AddHandler(event.Handler)
+			b.session.AddHandler(event.Handler(b.BotConfig))
 			b.logger.Printf("Registered event: %s as normal event", event.Name)
 		}
 	}
@@ -72,7 +71,8 @@ func (b *bot) setEventHandlers() {
 
 func (b *bot) registerCommands() error {
 	for _, cmd := range b.commands {
-		_, err := b.session.ApplicationCommandCreate(b.appID, b.guildID, cmd.Metadata)
+		_, err := b.session.ApplicationCommandCreate(b.ClientID, b.GuildID, cmd.Metadata)
+
 		if err != nil {
 			return fmt.Errorf("Failed to register command: %s\n%v", cmd.Metadata.Name, err)
 		}
@@ -83,14 +83,14 @@ func (b *bot) registerCommands() error {
 }
 
 func (b *bot) UnregisterCommands() error {
-	commands, err := b.session.ApplicationCommands(b.appID, b.guildID)
+	commands, err := b.session.ApplicationCommands(b.ClientID, b.GuildID)
 
 	if err != nil {
 		return fmt.Errorf("Failed to fetch application commands:\n%v", err)
 	}
 
 	for _, cmd := range commands {
-		err := b.session.ApplicationCommandDelete(b.appID, b.guildID, cmd.ID)
+		err := b.session.ApplicationCommandDelete(b.ClientID, b.GuildID, cmd.ID)
 		if err != nil {
 			return fmt.Errorf("Failed to delete command: %s\n%v", cmd.Name, err)
 		}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bachacode/go-discord-bot/internal/commands"
+	"github.com/bachacode/go-discord-bot/internal/config"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -14,15 +15,17 @@ func init() {
 var interactionCreate Event = Event{
 	Name: "Interaction Create / Slash Command Handling",
 	Once: false,
-	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		if i.Type != discordgo.InteractionApplicationCommand {
+	Handler: func(cfg *config.BotConfig) interface{} {
+		return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			if i.Type != discordgo.InteractionApplicationCommand {
+				return
+			}
+
+			cmd := commands.Get(i.ApplicationCommandData().Name)
+			if err := cmd.Handler(s, i); err != nil {
+				fmt.Printf("Failed to run interaction: %v\n", err)
+			}
 			return
 		}
-
-		cmd := commands.Get(i.ApplicationCommandData().Name)
-		if err := cmd.Handler(s, i); err != nil {
-			fmt.Printf("Failed to run interaction: %v\n", err)
-		}
-		return
 	},
 }
