@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: discordbot
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  bot:
+    build:
+      context: .
+    depends_on:
+      - db
+    env_file:
+      - .env
+    restart: always
+
+volumes:
+  db_data:
