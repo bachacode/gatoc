@@ -8,7 +8,6 @@ import (
 
 	"github.com/bachacode/go-discord-bot/internal/commands"
 	"github.com/bachacode/go-discord-bot/internal/config"
-	"github.com/bachacode/go-discord-bot/internal/events"
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 )
@@ -22,7 +21,7 @@ type BotBuilder struct {
 	logger         *log.Logger
 	intents        discordgo.Intent
 	customCommands map[string]commands.SlashCommand
-	customEvents   []events.Event
+	customEvents   []Event
 }
 
 func NewBotBuilder(cfg *config.BotConfig) *BotBuilder {
@@ -31,7 +30,7 @@ func NewBotBuilder(cfg *config.BotConfig) *BotBuilder {
 		logger:         log.New(os.Stdout, "[DEFAULT_BOT] ", log.LstdFlags|log.Lshortfile),
 		intents:        discordgo.IntentGuildMessages,
 		customCommands: make(map[string]commands.SlashCommand),
-		customEvents:   make([]events.Event, 0),
+		customEvents:   make([]Event, 0),
 	}
 }
 
@@ -55,7 +54,7 @@ func (bb *BotBuilder) WithCustomCommands(cmds map[string]commands.SlashCommand) 
 	return bb
 }
 
-func (bb *BotBuilder) WithCustomEvents(evts []events.Event) *BotBuilder {
+func (bb *BotBuilder) WithCustomEvents(evts []Event) *BotBuilder {
 	bb.customEvents = evts
 	return bb
 }
@@ -76,7 +75,7 @@ func (bb *BotBuilder) Build() (*bot, error) {
 	}
 
 	// Create bot context
-	botCtx := &botContext{
+	botCtx := &BotContext{
 		BotConfig: bb.cfg,
 		DB:        bb.db,
 		Logger:    bb.logger,
@@ -86,7 +85,7 @@ func (bb *BotBuilder) Build() (*bot, error) {
 	b := &bot{
 		session:    s,
 		intents:    bb.intents,
-		botContext: botCtx,
+		BotContext: botCtx,
 	}
 
 	// Create commands
@@ -103,7 +102,7 @@ func (bb *BotBuilder) Build() (*bot, error) {
 		b.events = bb.customEvents
 		botCtx.Logger.Println("INFO: Using custom events")
 	} else {
-		b.events = events.All()
+		b.events = eventRegistry
 		botCtx.Logger.Println("INFO: Using default events")
 	}
 

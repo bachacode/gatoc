@@ -3,18 +3,18 @@ package events
 import (
 	"fmt"
 
-	"github.com/bachacode/go-discord-bot/internal/config"
+	"github.com/bachacode/go-discord-bot/internal/bot"
 	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
-	register(messageCreate)
+	bot.RegisterEvent(messageCreate)
 }
 
-var messageCreate Event = Event{
+var messageCreate bot.Event = bot.Event{
 	Name: "Message Create",
 	Once: false,
-	Handler: func(cfg *config.BotConfig) interface{} {
+	Handler: func(ctx *bot.BotContext) interface{} {
 		return func(s *discordgo.Session, m *discordgo.MessageCreate) {
 			if m.Author.ID == s.State.User.ID || m.Author.Bot {
 				return

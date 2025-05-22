@@ -3,19 +3,19 @@ package events
 import (
 	"fmt"
 
+	"github.com/bachacode/go-discord-bot/internal/bot"
 	"github.com/bachacode/go-discord-bot/internal/commands"
-	"github.com/bachacode/go-discord-bot/internal/config"
 	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
-	register(interactionCreate)
+	bot.RegisterEvent(interactionCreate)
 }
 
-var interactionCreate Event = Event{
+var interactionCreate bot.Event = bot.Event{
 	Name: "Interaction Create / Slash Command Handling",
 	Once: false,
-	Handler: func(cfg *config.BotConfig) interface{} {
+	Handler: func(ctx *bot.BotContext) interface{} {
 		return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			if i.Type != discordgo.InteractionApplicationCommand {
 				return

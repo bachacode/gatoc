@@ -7,6 +7,7 @@ import (
 	"github.com/bachacode/go-discord-bot/internal/bot"
 	"github.com/bachacode/go-discord-bot/internal/config"
 	"github.com/bachacode/go-discord-bot/internal/database"
+	_ "github.com/bachacode/go-discord-bot/internal/events"
 	"github.com/bwmarrin/discordgo"
 )
 

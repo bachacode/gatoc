@@ -5,22 +5,21 @@ import (
 	"os"
 	"path/filepath"
 
-	// Required for embed.FS
-	"github.com/bachacode/go-discord-bot/internal/config"
+	"github.com/bachacode/go-discord-bot/internal/bot"
 	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
-	register(guildMemberAdd)
+	bot.RegisterEvent(guildMemberAdd)
 }
 
-var guildMemberAdd Event = Event{
+var guildMemberAdd bot.Event = bot.Event{
 	Name: "Guild Member Add / Join",
 	Once: true,
-	Handler: func(cfg *config.BotConfig) interface{} {
+	Handler: func(ctx *bot.BotContext) interface{} {
 		return func(s *discordgo.Session, r *discordgo.GuildMemberAdd) {
-			channelID := cfg.MainChannelID
-			emoji := cfg.WelcomeEmoji
+			channelID := ctx.MainChannelID
+			emoji := ctx.WelcomeEmoji
 
 			// if err := s.GuildMemberRoleAdd(r.GuildID, r.Member.User.ID, "603340605774626871"); err != nil {
 			// 	fmt.Println("Failed to add default role:", err)

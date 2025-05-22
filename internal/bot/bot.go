@@ -9,12 +9,11 @@ import (
 
 	"github.com/bachacode/go-discord-bot/internal/commands"
 	"github.com/bachacode/go-discord-bot/internal/config"
-	"github.com/bachacode/go-discord-bot/internal/events"
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 )
 
-type botContext struct {
+type BotContext struct {
 	*config.BotConfig
 	DB     *gorm.DB
 	Logger *log.Logger
@@ -24,8 +23,8 @@ type bot struct {
 	session  *discordgo.Session
 	intents  discordgo.Intent
 	commands map[string]commands.SlashCommand
-	events   []events.Event
-	*botContext
+	events   []Event
+	*BotContext
 }
 
 func (b *bot) Setup() {
@@ -39,10 +38,10 @@ func (b *bot) Setup() {
 func (b *bot) setEventHandlers() {
 	for _, event := range b.events {
 		if event.Once {
-			b.session.AddHandlerOnce(event.Handler(b.BotConfig))
+			b.session.AddHandlerOnce(event.Handler(b.BotContext))
 			b.Logger.Printf("INFO: Registered event: %s as once event\n", event.Name)
 		} else {
-			b.session.AddHandler(event.Handler(b.BotConfig))
+			b.session.AddHandler(event.Handler(b.BotContext))
 			b.Logger.Printf("INFO: Registered event: %s as normal event\n", event.Name)
 		}
 	}
