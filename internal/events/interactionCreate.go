@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/bachacode/go-discord-bot/internal/bot"
-	"github.com/bachacode/go-discord-bot/internal/commands"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -21,8 +20,8 @@ var interactionCreate bot.Event = bot.Event{
 				return
 			}
 
-			cmd := commands.Get(i.ApplicationCommandData().Name)
-			if err := cmd.Handler(s, i); err != nil {
+			cmd := bot.GetCommand(i.ApplicationCommandData().Name)
+			if err := cmd.Handler(s, i, ctx); err != nil {
 				fmt.Printf("Failed to run interaction: %v\n", err)
 			}
 			return

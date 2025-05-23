@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/bachacode/go-discord-bot/internal/bot"
+	_ "github.com/bachacode/go-discord-bot/internal/commands"
 	"github.com/bachacode/go-discord-bot/internal/config"
 	"github.com/bachacode/go-discord-bot/internal/database"
 	_ "github.com/bachacode/go-discord-bot/internal/events"

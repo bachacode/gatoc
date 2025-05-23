@@ -3,19 +3,20 @@ package commands
 import (
 	"fmt"
 
+	"github.com/bachacode/go-discord-bot/internal/bot"
 	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
-	register(ping.Metadata.Name, ping)
+	bot.RegisterCommand(ping.Metadata.Name, ping)
 }
 
-var ping SlashCommand = SlashCommand{
+var ping bot.SlashCommand = bot.SlashCommand{
 	Metadata: &discordgo.ApplicationCommand{
 		Name:        "gatoping",
 		Description: "Devuelve la latencia en MS",
 	},
-	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *bot.BotContext) error {
 		latency := s.HeartbeatLatency().Milliseconds()
 
 		// Follow up with the actual latency
@@ -26,7 +27,7 @@ var ping SlashCommand = SlashCommand{
 			},
 		})
 		if err != nil {
-			getInteractionFailedResponse(s, i, "")
+			bot.GetInteractionFailedResponse(s, i, "")
 			return fmt.Errorf("Error responding to interaction: %v", err)
 		}
 		return nil

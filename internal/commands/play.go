@@ -3,14 +3,15 @@ package commands
 import (
 	"strings"
 
+	"github.com/bachacode/go-discord-bot/internal/bot"
 	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
-	register(play.Metadata.Name, play)
+	bot.RegisterCommand(play.Metadata.Name, play)
 }
 
-var play SlashCommand = SlashCommand{
+var play bot.SlashCommand = bot.SlashCommand{
 	Metadata: &discordgo.ApplicationCommand{
 		Name: "gaplay",
 		Options: []*discordgo.ApplicationCommandOption{
@@ -23,25 +24,25 @@ var play SlashCommand = SlashCommand{
 		},
 		Description: "Reproduce una canción de Youtube.",
 	},
-	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *bot.BotContext) error {
 		// get query string
-		query, err := getInteractionOptionString("query", i)
+		query, err := bot.GetInteractionOptionString("query", i)
 		if err != nil {
-			getInteractionFailedResponse(s, i, "")
+			bot.GetInteractionFailedResponse(s, i, "")
 			return err
 		}
 
 		// get voice state
 		voiceState, err := s.State.VoiceState(i.GuildID, i.Member.User.ID)
 		if err != nil {
-			getInteractionFailedResponse(s, i, "No estas conectado a un canal de voz!")
+			bot.GetInteractionFailedResponse(s, i, "No estas conectado a un canal de voz!")
 			return err
 		}
 
 		// defer reply
 		var content string
-		if err = deferReply(s, i); err != nil {
-			getInteractionFailedResponse(s, i, "")
+		if err = bot.DeferReply(s, i); err != nil {
+			bot.GetInteractionFailedResponse(s, i, "")
 			return err
 		}
 
@@ -49,20 +50,20 @@ var play SlashCommand = SlashCommand{
 		voiceConn, err := s.ChannelVoiceJoin(i.GuildID, voiceState.ChannelID, false, true)
 		if err != nil {
 			content = "Ha ocurrido un error al intentar unirse al canal."
-			editDeferred(s, i, &content)
+			bot.EditDeferred(s, i, &content)
 			return err
 		}
 		defer voiceConn.Disconnect()
 
 		if !strings.Contains(query, "v=") {
 			content = "La URL dada no tiene el formato correcto."
-			editDeferred(s, i, &content)
+			bot.EditDeferred(s, i, &content)
 			return err
 		}
 
 		videoID := strings.Split(query, "v=")[1]
 		content = videoID
-		editDeferred(s, i, &content)
+		bot.EditDeferred(s, i, &content)
 		return nil
 	},
 }

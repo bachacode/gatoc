@@ -1,4 +1,4 @@
-package commands
+package bot
 
 import (
 	"errors"
@@ -8,24 +8,20 @@ import (
 
 type SlashCommand struct {
 	Metadata *discordgo.ApplicationCommand
-	Handler  func(s *discordgo.Session, i *discordgo.InteractionCreate) error
+	Handler  func(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *BotContext) error
 }
 
-var registry = make(map[string]SlashCommand)
+var commandRegistry = make(map[string]SlashCommand)
 
-func register(name string, cmd SlashCommand) {
-	registry[name] = cmd
+func RegisterCommand(name string, cmd SlashCommand) {
+	commandRegistry[name] = cmd
 }
 
-func Get(name string) SlashCommand {
-	return registry[name]
+func GetCommand(name string) SlashCommand {
+	return commandRegistry[name]
 }
 
-func All() map[string]SlashCommand {
-	return registry
-}
-
-func getInteractionFailedResponse(s *discordgo.Session, i *discordgo.InteractionCreate, content string) error {
+func GetInteractionFailedResponse(s *discordgo.Session, i *discordgo.InteractionCreate, content string) error {
 	message := "Ha ocurrido un error ejecutando el comando."
 
 	if content != "" {
@@ -42,13 +38,13 @@ func getInteractionFailedResponse(s *discordgo.Session, i *discordgo.Interaction
 	)
 }
 
-func deferReply(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+func DeferReply(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	return s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 	})
 }
 
-func editDeferred(s *discordgo.Session, i *discordgo.InteractionCreate, content *string) error {
+func EditDeferred(s *discordgo.Session, i *discordgo.InteractionCreate, content *string) error {
 	_, err := s.InteractionResponseEdit(
 		i.Interaction,
 		&discordgo.WebhookEdit{
@@ -63,7 +59,7 @@ func editDeferred(s *discordgo.Session, i *discordgo.InteractionCreate, content 
 	return nil
 }
 
-func getInteractionOptionString(name string, i *discordgo.InteractionCreate) (string, error) {
+func GetInteractionOptionString(name string, i *discordgo.InteractionCreate) (string, error) {
 	options := i.ApplicationCommandData().Options
 
 	for _, opt := range options {

@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/bachacode/go-discord-bot/internal/commands"
 	"github.com/bachacode/go-discord-bot/internal/config"
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
@@ -22,7 +21,7 @@ type BotContext struct {
 type bot struct {
 	session  *discordgo.Session
 	intents  discordgo.Intent
-	commands map[string]commands.SlashCommand
+	commands map[string]SlashCommand
 	events   []Event
 	*BotContext
 }
