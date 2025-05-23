@@ -1,7 +1,6 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/bachacode/go-discord-bot/internal/config"
@@ -9,11 +8,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type WelcomeRoles struct {
+type WelcomeRole struct {
 	gorm.Model
 	GuildID string
 	RoleID  string
-	UserID  sql.NullString
+	UserID  *string
 }
 
 func New(cfg *config.DbConfig) (*gorm.DB, error) {
@@ -28,7 +27,7 @@ func New(cfg *config.DbConfig) (*gorm.DB, error) {
 }
 
 func Migrate(db *gorm.DB) error {
-	err := db.AutoMigrate(&WelcomeRoles{})
+	err := db.AutoMigrate(&WelcomeRole{})
 
 	if err != nil {
 		return err
