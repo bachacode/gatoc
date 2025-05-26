@@ -8,9 +8,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func init() {
-	bot.RegisterCommand(addWelcomeRole.Metadata.Name, addWelcomeRole)
-}
+// func init() {
+// 	bot.RegisterCommand(addWelcomeRole.Metadata.Name, addWelcomeRole)
+// }
 
 var addWelcomeRole bot.SlashCommand = bot.SlashCommand{
 	Metadata: &discordgo.ApplicationCommand{
