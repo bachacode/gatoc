@@ -90,9 +90,10 @@ var welcomeRole bot.SlashCommand = bot.SlashCommand{
 		}
 
 		embed := discordgo.MessageEmbed{
-			Title:  "Gato Roles",
-			Fields: fields,
-			Color:  0xFFFFFF,
+			Title:       "Roles de bienvenida",
+			Description: "Roles dados a los miembros al unirse al servidor.",
+			Fields:      fields,
+			Color:       0xFFFFFF,
 			Footer: &discordgo.MessageEmbedFooter{
 				Text: fmt.Sprintf("Generated at %s", time.Now().Format("2006-01-02 15:04:05")),
 			},
