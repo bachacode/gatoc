@@ -11,6 +11,11 @@ type SlashCommand struct {
 	Handler  func(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *BotContext) error
 }
 
+type SlashSubcommand struct {
+	Metadata *discordgo.ApplicationCommandOption
+	Handler  func(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *BotContext) error
+}
+
 var commandRegistry = make(map[string]SlashCommand)
 
 func RegisterCommand(name string, cmd SlashCommand) {
