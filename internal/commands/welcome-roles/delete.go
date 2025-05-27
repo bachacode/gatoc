@@ -15,8 +15,8 @@ var Delete bot.SlashSubcommand = bot.SlashSubcommand{
 		Description: "Elimina un rol de bienvenida",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
-				Type:        discordgo.ApplicationCommandOptionRole, // This is the key!
-				Name:        "ID",
+				Type:        discordgo.ApplicationCommandOptionString, // This is the key!
+				Name:        "id",
 				Description: "Rol a eliminar",
 				Required:    true,
 			},
@@ -36,27 +36,23 @@ var Delete bot.SlashSubcommand = bot.SlashSubcommand{
 		}
 
 		db := ctx.DB
-		var roleID string
-		var selectedRole *discordgo.Role
+		var wRoleID string
 		var content string
-		if roleOption, ok := optionMap["ID"]; ok {
-			roleID = roleOption.Value.(string)
-			if i.ApplicationCommandData().Resolved != nil && i.ApplicationCommandData().Resolved.Roles != nil {
-				selectedRole = i.ApplicationCommandData().Resolved.Roles[roleID]
-			}
+		if roleOption, ok := optionMap["id"]; ok {
+			wRoleID = roleOption.Value.(string)
 		} else {
 			content := "Ha ocurrido un error para obtener el rol"
 			bot.EditDeferred(s, i, &content)
 			return fmt.Errorf("Error responding to interaction\n")
 		}
 
-		if result := db.Delete(&database.WelcomeRole{}, roleID); result.Error != nil {
+		if result := db.Delete(&database.WelcomeRole{}, wRoleID); result.Error != nil {
 			content := "Ha ocurrido un error al eliminar el rol de bienvenida"
 			bot.EditDeferred(s, i, &content)
-			return fmt.Errorf("Error deleting welcome role: %s\n%v", selectedRole.Name, result.Error)
+			return fmt.Errorf("Error deleting welcome role: %s\n%v", wRoleID, result.Error)
 		}
 
-		content = fmt.Sprintf("El rol `%s` ha sido eliminado de los roles de bienvenida", selectedRole.Name)
+		content = fmt.Sprintf("El rol de ID `%s` ha sido eliminado de los roles de bienvenida", wRoleID)
 		bot.EditDeferred(s, i, &content)
 
 		return nil

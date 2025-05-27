@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/bachacode/go-discord-bot/internal/bot"
 	subcommands "github.com/bachacode/go-discord-bot/internal/commands/welcome-roles"
 	"github.com/bwmarrin/discordgo"
@@ -20,6 +22,7 @@ var welcomeRole bot.SlashCommand = bot.SlashCommand{
 		Options: []*discordgo.ApplicationCommandOption{
 			subcommands.Add.Metadata,
 			subcommands.List.Metadata,
+			subcommands.Delete.Metadata,
 		},
 	},
 	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *bot.BotContext) error {
@@ -30,8 +33,11 @@ var welcomeRole bot.SlashCommand = bot.SlashCommand{
 			return subcommands.Add.Handler(s, i, ctx)
 		case "lista":
 			return subcommands.List.Handler(s, i, ctx)
+		case "eliminar":
+			return subcommands.Delete.Handler(s, i, ctx)
+		default:
+			bot.GetInteractionFailedResponse(s, i, "El subcomando llamado no existe.")
+			return fmt.Errorf("Subcommand doesn't exist\n")
 		}
-
-		return nil
 	},
 }
