@@ -60,9 +60,8 @@ var List bot.SlashSubcommand = bot.SlashSubcommand{
 				return fmt.Errorf("Error getting a role: %s from the guild: %s\n%v", wRole.RoleID, i.GuildID, err)
 			}
 
-			fields[0].Value += fmt.Sprintf("%s\n", role.ID)
+			fields[0].Value += fmt.Sprintf("%d\n", wRole.ID)
 			fields[1].Value += role.Name + "\n"
-
 			if wRole.UserID == nil {
 				fields[2].Value += "Todos\n"
 				continue
@@ -94,7 +93,12 @@ var List bot.SlashSubcommand = bot.SlashSubcommand{
 		}
 
 		// Send the embed to the channel
-		_, err := s.ChannelMessageSendEmbed(i.ChannelID, &embed)
+		_, err := s.InteractionResponseEdit(
+			i.Interaction,
+			&discordgo.WebhookEdit{
+				Embeds: &[]*discordgo.MessageEmbed{&embed},
+			},
+		)
 		if err != nil {
 			return fmt.Errorf("Error sending embed: %v\n", err)
 		}
