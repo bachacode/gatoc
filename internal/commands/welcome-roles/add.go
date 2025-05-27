@@ -70,13 +70,17 @@ var Add bot.SlashSubcommand = bot.SlashSubcommand{
 			RoleID:  selectedRole.ID,
 		}
 
+		if result := db.Create(&welcomeRole); result.Error != nil {
+			content := "Ha ocurrido un agregando el rol a los roles de bienvenida"
+			bot.EditDeferred(s, i, &content)
+			return fmt.Errorf("Error creating welcome role: %s\n%v", selectedRole.Name, result.Error)
+		}
+
 		content = fmt.Sprintf("El rol `%s` será asignado a los nuevos miembros", selectedRole.Name)
 		if targetUser != nil {
 			content = fmt.Sprintf("El rol `%s` será asignado al usuario `%s`", selectedRole.Name, targetUser.Username)
 			welcomeRole.UserID = &targetUser.ID
 		}
-
-		db.Create(&welcomeRole)
 
 		bot.EditDeferred(s, i, &content)
 
