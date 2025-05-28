@@ -72,6 +72,12 @@ var Add bot.SlashSubcommand = bot.SlashSubcommand{
 			RoleID:  selectedRole.ID,
 		}
 
+		content = fmt.Sprintf("El rol `%s` será asignado a los nuevos miembros", selectedRole.Name)
+		if targetUser != nil {
+			content = fmt.Sprintf("El rol `%s` será asignado al usuario `%s`", selectedRole.Name, targetUser.Username)
+			welcomeRole.UserID = &targetUser.ID
+		}
+
 		if result := db.Create(&welcomeRole); result.Error != nil {
 			if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
 				content = "Ese rol ya esta registrado en los roles de bienvenidas para ese/esos usuario/s"
@@ -80,12 +86,6 @@ var Add bot.SlashSubcommand = bot.SlashSubcommand{
 			}
 			bot.EditDeferred(s, i, &content)
 			return fmt.Errorf("Error creating welcome role: %s\n%v", selectedRole.Name, result.Error)
-		}
-
-		content = fmt.Sprintf("El rol `%s` será asignado a los nuevos miembros", selectedRole.Name)
-		if targetUser != nil {
-			content = fmt.Sprintf("El rol `%s` será asignado al usuario `%s`", selectedRole.Name, targetUser.Username)
-			welcomeRole.UserID = &targetUser.ID
 		}
 
 		bot.EditDeferred(s, i, &content)
