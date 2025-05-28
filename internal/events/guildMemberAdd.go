@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/bachacode/go-discord-bot/internal/bot"
+	"github.com/bachacode/go-discord-bot/internal/database"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -20,6 +21,30 @@ var guildMemberAdd bot.Event = bot.Event{
 		return func(s *discordgo.Session, r *discordgo.GuildMemberAdd) {
 			channelID := ctx.MainChannelID
 			emoji := ctx.WelcomeEmoji
+			db := ctx.DB
+
+			var wRoles []database.WelcomeRole
+			result := db.Find(&wRoles)
+
+			if result.Error != nil {
+				fmt.Printf("Failed to get welcome roles: %v\n", result.Error)
+				return
+			}
+
+			for _, wRole := range wRoles {
+				if wRole.UserID == nil {
+					if err := s.GuildMemberRoleAdd(r.GuildID, r.Member.User.ID, wRole.RoleID); err != nil {
+						fmt.Println("Failed to add role to new member:", err)
+					}
+					continue
+				}
+
+				if *wRole.UserID == r.Member.User.ID {
+					if err := s.GuildMemberRoleAdd(r.GuildID, r.Member.User.ID, wRole.RoleID); err != nil {
+						fmt.Println("Failed to add role to new member:", err)
+					}
+				}
+			}
 
 			// if err := s.GuildMemberRoleAdd(r.GuildID, r.Member.User.ID, "603340605774626871"); err != nil {
 			// 	fmt.Println("Failed to add default role:", err)
