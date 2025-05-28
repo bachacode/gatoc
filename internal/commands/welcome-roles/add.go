@@ -1,6 +1,7 @@
 package welcomeroles
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/bachacode/go-discord-bot/internal/bot"
@@ -72,10 +73,10 @@ var Add bot.SlashSubcommand = bot.SlashSubcommand{
 		}
 
 		if result := db.Create(&welcomeRole); result.Error != nil {
-			if result.Error == gorm.ErrDuplicatedKey {
+			if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
 				content = "Ese rol ya esta registrado en los roles de bienvenidas para ese/esos usuario/s"
 			} else {
-				content = "Ha ocurrido un agregando el rol a los roles de bienvenida"
+				content = "Ha ocurrido un error agregando el rol a los roles de bienvenida"
 			}
 			bot.EditDeferred(s, i, &content)
 			return fmt.Errorf("Error creating welcome role: %s\n%v", selectedRole.Name, result.Error)
