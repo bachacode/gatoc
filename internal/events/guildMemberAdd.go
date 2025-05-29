@@ -16,7 +16,7 @@ func init() {
 
 var guildMemberAdd bot.Event = bot.Event{
 	Name: "Guild Member Add / Join",
-	Once: true,
+	Once: false,
 	Handler: func(ctx *bot.BotContext) interface{} {
 		return func(s *discordgo.Session, r *discordgo.GuildMemberAdd) {
 			channelID := ctx.MainChannelID
