@@ -1,10 +1,10 @@
 package events
 
 import (
+	"bytes"
 	"fmt"
-	"os"
-	"path/filepath"
 
+	"github.com/bachacode/go-discord-bot/assets"
 	"github.com/bachacode/go-discord-bot/internal/bot"
 	"github.com/bachacode/go-discord-bot/internal/database"
 	"github.com/bwmarrin/discordgo"
@@ -46,20 +46,12 @@ var guildMemberAdd bot.Event = bot.Event{
 				}
 			}
 
-			// if err := s.GuildMemberRoleAdd(r.GuildID, r.Member.User.ID, "603340605774626871"); err != nil {
-			// 	fmt.Println("Failed to add default role:", err)
-			// }
-
-			// Path to the gif relative to the project root
-			gifPath := filepath.Join("assets", "cat.gif")
-
-			// Open the gif file
-			file, err := os.Open(gifPath)
+			catGif, err := assets.GetCatGif()
 			if err != nil {
-				fmt.Printf("Failed to open cat gif file: %v\n", err)
+				ctx.Logger.Printf("Failed to read cat.gif: %v", err)
 				return
 			}
-			defer file.Close()
+			file := bytes.NewReader(catGif)
 
 			embed := discordgo.MessageSend{
 				Embeds: []*discordgo.MessageEmbed{
