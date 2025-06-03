@@ -1,6 +1,8 @@
 package events
 
 import (
+	"strings"
+
 	"github.com/bachacode/go-discord-bot/internal/bot"
 	"github.com/bwmarrin/discordgo"
 )
@@ -18,6 +20,33 @@ var messageCreate bot.Event = bot.Event{
 				return
 			}
 
+			channelID := m.ChannelID
+			channel, err := s.Channel(channelID)
+
+			if err != nil {
+				ctx.Logger.Printf("Failed to get channel from the message: %v", err)
+				return
+			}
+
+			if len(channel.Messages) >= 3 {
+				allSame := true
+				lastMessages := channel.Messages[len(channel.Messages)-3:]
+
+				for _, message := range lastMessages {
+					if strings.ToLower(message.Content) != strings.ToLower(lastMessages[0].Content) {
+						allSame = false
+					}
+				}
+
+				if allSame {
+					_, err := s.ChannelMessageSend(channelID, lastMessages[len(lastMessages)-1].Content)
+
+					if err != nil {
+						ctx.Logger.Printf("Failed to send message: %v", err)
+						return
+					}
+				}
+			}
 		}
 	},
 }
