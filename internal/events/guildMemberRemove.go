@@ -19,7 +19,7 @@ type LeaveMessage struct {
 
 var guildMemberRemove bot.Event = bot.Event{
 	Name: "Guild Member Remove / Leave",
-	Once: true,
+	Once: false,
 	Handler: func(ctx *bot.BotContext) interface{} {
 		return func(s *discordgo.Session, r *discordgo.GuildMemberRemove) {
 			channelID := ctx.MainChannelID
