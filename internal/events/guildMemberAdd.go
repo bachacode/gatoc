@@ -1,10 +1,8 @@
 package events
 
 import (
-	"bytes"
 	"fmt"
 
-	"github.com/bachacode/go-discord-bot/assets"
 	"github.com/bachacode/go-discord-bot/internal/bot"
 	"github.com/bachacode/go-discord-bot/internal/database"
 	"github.com/bwmarrin/discordgo"
@@ -46,32 +44,19 @@ var guildMemberAdd bot.Event = bot.Event{
 				}
 			}
 
-			catGif, err := assets.GetCatGif()
-			if err != nil {
-				ctx.Logger.Printf("Failed to read cat.gif: %v", err)
-				return
-			}
-			file := bytes.NewReader(catGif)
-
 			embed := discordgo.MessageSend{
 				Embeds: []*discordgo.MessageEmbed{
 					{
-						Title:       "qlq <" + emoji + "> 🍷",
+						Title:       "qlq " + emoji + " 🍷",
 						Color:       0xFFFFFF,
 						Description: r.Member.DisplayName() + " acaba de cometer el error mas grande de su vida entrando a esta tierra profana.",
 						Image: &discordgo.MessageEmbedImage{
-							URL: "attachment://cat.gif",
+							URL: "https://media.tenor.com/eH-RoS91Q1gAAAAC/cat.gif",
 						},
 					},
 				},
-				Files: []*discordgo.File{
-					{
-						Name:   "cat.gif",
-						Reader: file,
-					},
-				},
 			}
-			_, err = s.ChannelMessageSendComplex(channelID, &embed)
+			_, err := s.ChannelMessageSendComplex(channelID, &embed)
 
 			if err != nil {
 				fmt.Printf("Failed to get main channel: %v\n", err)
