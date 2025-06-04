@@ -89,6 +89,7 @@ func (b *bot) UnregisterCommands() {
 
 func (b *bot) Run() error {
 
+	b.session.Identify.Intents = b.intents
 	b.Logger.Println("INFO: Starting bot session...")
 	if err := b.session.Open(); err != nil {
 		return fmt.Errorf("Error starting bot session: %v", err)
