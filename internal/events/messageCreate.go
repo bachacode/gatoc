@@ -21,30 +21,28 @@ var messageCreate bot.Event = bot.Event{
 			}
 
 			channelID := m.ChannelID
-			channel, err := s.Channel(channelID)
+			messages, err := s.ChannelMessages(channelID, 2, "", "", "")
 
 			if err != nil {
-				ctx.Logger.Printf("Failed to get channel from the message: %v", err)
+				ctx.Logger.Printf("Failed to get message history from channel: %v", err)
 				return
 			}
 
-			if len(channel.Messages) >= 3 {
-				allSame := true
-				lastMessages := channel.Messages[len(channel.Messages)-3:]
+			count := 0
 
-				for _, message := range lastMessages {
-					if strings.ToLower(message.Content) != strings.ToLower(lastMessages[0].Content) {
-						allSame = false
-					}
-				}
+			if strings.ToLower(messages[0].Content) == strings.ToLower(messages[1].Content) &&
+				(messages[0].Author.GlobalName != messages[1].Author.GlobalName) {
+				count++
+			} else {
+				count = 0
+			}
 
-				if allSame {
-					_, err := s.ChannelMessageSend(channelID, lastMessages[len(lastMessages)-1].Content)
-
-					if err != nil {
-						ctx.Logger.Printf("Failed to send message: %v", err)
-						return
-					}
+			if count >= 2 {
+				count = 0
+				_, err := s.ChannelMessageSend(channelID, messages[len(messages)-1].Content)
+				if err != nil {
+					ctx.Logger.Printf("Failed to send message: %v", err)
+					return
 				}
 			}
 		}
