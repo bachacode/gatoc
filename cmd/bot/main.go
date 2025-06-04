@@ -28,7 +28,12 @@ func main() {
 
 	bb := bot.NewBotBuilder(cfg.BotConfig)
 	bb.WithDatabase(db)
-	bb.WithIntents(discordgo.IntentsGuilds | discordgo.IntentsGuildVoiceStates)
+	bb.WithIntents(
+		discordgo.IntentsGuilds |
+			discordgo.IntentsGuildVoiceStates |
+			discordgo.IntentsMessageContent |
+			discordgo.IntentGuildMessages,
+	)
 	bb.WithLogger(logger)
 	bot, err := bb.Build()
 	if err != nil {
