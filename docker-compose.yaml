@@ -19,6 +19,9 @@ services:
     env_file:
       - .env
     restart: always
+    # Important to bind/mount your codebase dir to /app dir for live reload
+    volumes:
+      - ./:/app
 
 volumes:
   db_data:
