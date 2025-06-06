@@ -55,7 +55,7 @@ var Add bot.SlashSubcommand = bot.SlashSubcommand{
 			}
 		} else {
 			content = "Ha ocurrido un error para obtener el rol"
-			bot.EditDeferred(s, i, &content)
+			bot.EditDeferred(s, i, content)
 			return fmt.Errorf("Error responding to interaction\n")
 		}
 
@@ -84,11 +84,11 @@ var Add bot.SlashSubcommand = bot.SlashSubcommand{
 			} else {
 				content = "Ha ocurrido un error agregando el rol a los roles de bienvenida"
 			}
-			bot.EditDeferred(s, i, &content)
+			bot.EditDeferred(s, i, content)
 			return fmt.Errorf("Error creating welcome role: %s\n%v", selectedRole.Name, result.Error)
 		}
 
-		bot.EditDeferred(s, i, &content)
+		bot.EditDeferred(s, i, content)
 
 		return nil
 	},

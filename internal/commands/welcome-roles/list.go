@@ -30,7 +30,7 @@ var List bot.SlashSubcommand = bot.SlashSubcommand{
 
 		if result.Error != nil {
 			content = "Ha ocurrido un error para obtener la lista de roles"
-			bot.EditDeferred(s, i, &content)
+			bot.EditDeferred(s, i, content)
 			return fmt.Errorf("Error responding to interaction: %v\n", result.Error)
 		}
 
@@ -56,7 +56,7 @@ var List bot.SlashSubcommand = bot.SlashSubcommand{
 			role, err := s.State.Role(i.GuildID, wRole.RoleID)
 			if err != nil {
 				content = "Ha ocurrido un error obteniendo un rol"
-				bot.EditDeferred(s, i, &content)
+				bot.EditDeferred(s, i, content)
 				return fmt.Errorf("Error getting a role: %s from the guild: %s\n%v", wRole.RoleID, i.GuildID, err)
 			}
 
@@ -71,7 +71,7 @@ var List bot.SlashSubcommand = bot.SlashSubcommand{
 
 			if err != nil {
 				content = "Ha ocurrido un error obteniendo un usuario"
-				bot.EditDeferred(s, i, &content)
+				bot.EditDeferred(s, i, content)
 				return fmt.Errorf("Error getting an user: %s from the guild: %s\n%v", *wRole.UserID, i.GuildID, err)
 			}
 

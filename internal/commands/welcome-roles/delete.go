@@ -42,22 +42,22 @@ var Delete bot.SlashSubcommand = bot.SlashSubcommand{
 			wRoleID = roleOption.Value.(string)
 		} else {
 			content = "Ha ocurrido un error para obtener el rol."
-			bot.EditDeferred(s, i, &content)
+			bot.EditDeferred(s, i, content)
 			return fmt.Errorf("Error responding to interaction\n")
 		}
 
 		if result := db.Delete(&database.WelcomeRole{}, wRoleID); result.Error != nil {
 			content = "Ha ocurrido un error al eliminar el rol de bienvenida"
-			bot.EditDeferred(s, i, &content)
+			bot.EditDeferred(s, i, content)
 			return fmt.Errorf("Error deleting welcome role: %s\n%v", wRoleID, result.Error)
 		} else if result.RowsAffected < 1 {
 			content = "El ID introducido no existe en los roles de bienvenida"
-			bot.EditDeferred(s, i, &content)
+			bot.EditDeferred(s, i, content)
 			return nil
 		}
 
 		content = fmt.Sprintf("El rol de ID `%s` ha sido eliminado de los roles de bienvenida", wRoleID)
-		bot.EditDeferred(s, i, &content)
+		bot.EditDeferred(s, i, content)
 
 		return nil
 	},

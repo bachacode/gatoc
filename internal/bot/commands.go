@@ -49,11 +49,11 @@ func DeferReply(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	})
 }
 
-func EditDeferred(s *discordgo.Session, i *discordgo.InteractionCreate, content *string) error {
+func EditDeferred(s *discordgo.Session, i *discordgo.InteractionCreate, content string) error {
 	_, err := s.InteractionResponseEdit(
 		i.Interaction,
 		&discordgo.WebhookEdit{
-			Content: content,
+			Content: &content,
 		},
 	)
 
