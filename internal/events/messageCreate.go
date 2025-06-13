@@ -2,6 +2,7 @@ package events
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/bachacode/go-discord-bot/internal/bot"
@@ -102,11 +103,16 @@ func areMessagesRepeated(messages []*discordgo.Message, max int) bool {
 }
 
 func fixTwitterEmbed(m *discordgo.MessageCreate) *string {
-	tweet := "<" + m.Content + ">"
-	authorName := strings.Split(strings.Split(m.Content, "/status")[0], ".com/")[1]
-	author := "<" + strings.Split(m.Content, "/status")[0] + ">"
+	// Regex pattern to match a URL
+	re := regexp.MustCompile(`https?://[^\s]+`)
+	// Find the first URL match
+	url := re.FindString(m.Content)
+
+	tweet := "<" + url + ">"
+	authorName := strings.Split(strings.Split(url, "/status")[0], ".com/")[1]
+	author := "<" + strings.Split(url, "/status")[0] + ">"
 	mention := fmt.Sprintf("<@%s>", m.Author.ID)
-	fxtwitterURL := strings.Replace(m.Content, "twitter.com", "fxtwitter.com", 1)
+	fxtwitterURL := strings.Replace(url, "twitter.com", "fxtwitter.com", 1)
 	fxtwitterURL = strings.Replace(fxtwitterURL, "x.com", "fxtwitter.com", 1)
 
 	s := fmt.Sprintf("[Tweet](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", tweet, authorName, author, fxtwitterURL, mention)
@@ -114,12 +120,17 @@ func fixTwitterEmbed(m *discordgo.MessageCreate) *string {
 }
 
 func fixRedditEmbed(m *discordgo.MessageCreate) *string {
-	url := "<" + m.Content + ">"
-	authorName := strings.Split(strings.Split(m.Content, "/comments")[0], "r/")[1]
-	author := "<" + strings.Split(m.Content, "/comments")[0] + ">"
-	mention := fmt.Sprintf("<@%s>", m.Author.ID)
-	vxredditURL := strings.Replace(m.Content, "reddit.com", "vxreddit.com", 1)
+	// Regex pattern to match a URL
+	re := regexp.MustCompile(`https?://[^\s]+`)
+	// Find the first URL match
+	url := re.FindString(m.Content)
 
-	s := fmt.Sprintf("[Reddit](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", url, authorName, author, vxredditURL, mention)
+	redditURL := "<" + url + ">"
+	authorName := strings.Split(strings.Split(url, "/comments")[0], "r/")[1]
+	author := "<" + strings.Split(url, "/comments")[0] + ">"
+	mention := fmt.Sprintf("<@%s>", m.Author.ID)
+	vxredditURL := strings.Replace(url, "reddit.com", "vxreddit.com", 1)
+
+	s := fmt.Sprintf("[Reddit](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", redditURL, authorName, author, vxredditURL, mention)
 	return &s
 }
