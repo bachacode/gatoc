@@ -41,18 +41,34 @@ var messageCreate bot.Event = bot.Event{
 				}
 			}
 
+			var messageEdit *discordgo.MessageEdit
+			var fixedMessage *string
 			isFxtwitter := strings.Contains(m.Content, "fxtwitter.com")
 			isTwitterOrX := strings.Contains(m.Content, "twitter.com") || strings.Contains(m.Content, "x.com")
 			hasStatusPath := strings.Contains(m.Content, "/status/")
 
 			if !isFxtwitter && isTwitterOrX && hasStatusPath {
-				fixedMessage := fixTwitterEmbed(m)
-				messageEdit := &discordgo.MessageEdit{
+				fixedMessage = fixTwitterEmbed(m)
+				messageEdit = &discordgo.MessageEdit{
 					ID:      m.ID,
 					Channel: m.ChannelID,
 					Flags:   discordgo.MessageFlagsSuppressEmbeds,
 				}
+			}
 
+			isVxreddit := strings.Contains(m.Content, "vxreddit.com")
+			isReddit := strings.Contains(m.Content, "reddit.com")
+			hasCommentsPath := strings.Contains(m.Content, "/comments/")
+			if !isVxreddit && isReddit && hasCommentsPath {
+				fixedMessage = fixRedditEmbed(m)
+				messageEdit = &discordgo.MessageEdit{
+					ID:      m.ID,
+					Channel: m.ChannelID,
+					Flags:   discordgo.MessageFlagsSuppressEmbeds,
+				}
+			}
+
+			if messageEdit != nil {
 				// Supress embeds
 				if _, err := s.ChannelMessageEditComplex(messageEdit); err != nil {
 					ctx.Logger.Printf("Failed to supress embeds from previous message: %v", err)
@@ -69,6 +85,7 @@ var messageCreate bot.Event = bot.Event{
 					return
 				}
 			}
+
 		}
 	},
 }
@@ -93,5 +110,16 @@ func fixTwitterEmbed(m *discordgo.MessageCreate) *string {
 	fxtwitterURL = strings.Replace(fxtwitterURL, "x.com", "fxtwitter.com", 1)
 
 	s := fmt.Sprintf("[Tweet](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", tweet, authorName, author, fxtwitterURL, mention)
+	return &s
+}
+
+func fixRedditEmbed(m *discordgo.MessageCreate) *string {
+	url := "<" + m.Content + ">"
+	authorName := strings.Split(strings.Split(m.Content, "/comments")[0], "r/")[1]
+	author := "<" + strings.Split(m.Content, "/comments")[0] + ">"
+	mention := fmt.Sprintf("<@%s>", m.Author.ID)
+	vxredditURL := strings.Replace(m.Content, "reddit.com", "vxreddit.com", 1)
+
+	s := fmt.Sprintf("[Reddit](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", url, authorName, author, vxredditURL, mention)
 	return &s
 }
