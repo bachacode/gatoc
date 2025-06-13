@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/bachacode/go-discord-bot/internal/bot"
@@ -40,6 +41,32 @@ var messageCreate bot.Event = bot.Event{
 				}
 			}
 
+			fixedMessage := fixTwitterEmbed(m)
+
+			if fixedMessage != nil {
+				messageEdit := &discordgo.MessageEdit{
+					ID:      m.ID,
+					Channel: m.ChannelID,
+					Flags:   discordgo.MessageFlagsSuppressEmbeds,
+				}
+
+				// Supress embeds
+				if _, err := s.ChannelMessageEditComplex(messageEdit); err != nil {
+					ctx.Logger.Printf("Failed to supress embeds from previous message: %v", err)
+					return
+				}
+
+				if _, err := s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+					Content: *fixedMessage,
+					AllowedMentions: &discordgo.MessageAllowedMentions{
+						Parse: []discordgo.AllowedMentionType{},
+					},
+				}); err != nil {
+					ctx.Logger.Printf("Failed to send embedded message: %v", err)
+					return
+				}
+			}
+
 		}
 	},
 }
@@ -53,4 +80,21 @@ func areMessagesRepeated(messages []*discordgo.Message, max int) bool {
 	}
 
 	return messageCount >= max
+}
+
+func fixTwitterEmbed(m *discordgo.MessageCreate) *string {
+	if !strings.Contains(m.Content, "twitter.com") &&
+		!strings.Contains(m.Content, "x.com") &&
+		!strings.Contains(m.Content, "/status/") ||
+		strings.Contains(m.Content, "fxtwitter.com") {
+		return nil
+	}
+	tweet := "<" + m.Content + ">"
+	author := "<" + strings.Split(m.Content, "/status")[0] + ">"
+	mention := fmt.Sprintf("<@%s>", m.Author.ID)
+	fxtwitterURL := strings.Replace(m.Content, "twitter.com", "fxtwitter.com", 1)
+	fxtwitterURL = strings.Replace(fxtwitterURL, "x.com", "fxtwitter.com", 1)
+
+	s := fmt.Sprintf("[Tweet](%s) • [Autor](%s) • [Fix](%s) • Enviado por %s ", tweet, author, fxtwitterURL, mention)
+	return &s
 }
