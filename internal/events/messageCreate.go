@@ -11,6 +11,8 @@ func init() {
 	bot.RegisterEvent(messageCreate)
 }
 
+var messageCount int = 0
+
 var messageCreate bot.Event = bot.Event{
 	Name: "Message Create",
 	Once: false,
@@ -28,23 +30,27 @@ var messageCreate bot.Event = bot.Event{
 				return
 			}
 
-			count := 0
-
-			if strings.ToLower(messages[0].Content) == strings.ToLower(messages[1].Content) &&
-				(messages[0].Author.GlobalName != messages[1].Author.GlobalName) {
-				count++
-			} else {
-				count = 0
-			}
-
-			if count >= 2 {
-				count = 0
+			// Repeat message if last 3 messages are the same
+			if areMessagesRepeated(messages, 2) {
+				messageCount = 0
 				_, err := s.ChannelMessageSend(channelID, messages[len(messages)-1].Content)
 				if err != nil {
 					ctx.Logger.Printf("Failed to send message: %v", err)
 					return
 				}
 			}
+
 		}
 	},
+}
+
+func areMessagesRepeated(messages []*discordgo.Message, max int) bool {
+	if strings.ToLower(messages[0].Content) == strings.ToLower(messages[1].Content) &&
+		(messages[0].Author.GlobalName != messages[1].Author.GlobalName) {
+		messageCount++
+	} else {
+		messageCount = 0
+	}
+
+	return messageCount >= max
 }
