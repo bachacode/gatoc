@@ -41,9 +41,12 @@ var messageCreate bot.Event = bot.Event{
 				}
 			}
 
-			fixedMessage := fixTwitterEmbed(m)
+			isFxtwitter := strings.Contains(m.Content, "fxtwitter.com")
+			isTwitterOrX := strings.Contains(m.Content, "twitter.com") || strings.Contains(m.Content, "x.com")
+			hasStatusPath := strings.Contains(m.Content, "/status/")
 
-			if fixedMessage != nil {
+			if !isFxtwitter && isTwitterOrX && hasStatusPath {
+				fixedMessage := fixTwitterEmbed(m)
 				messageEdit := &discordgo.MessageEdit{
 					ID:      m.ID,
 					Channel: m.ChannelID,
@@ -66,7 +69,6 @@ var messageCreate bot.Event = bot.Event{
 					return
 				}
 			}
-
 		}
 	},
 }
@@ -83,18 +85,13 @@ func areMessagesRepeated(messages []*discordgo.Message, max int) bool {
 }
 
 func fixTwitterEmbed(m *discordgo.MessageCreate) *string {
-	if !strings.Contains(m.Content, "twitter.com") &&
-		!strings.Contains(m.Content, "x.com") &&
-		!strings.Contains(m.Content, "/status/") ||
-		strings.Contains(m.Content, "fxtwitter.com") {
-		return nil
-	}
 	tweet := "<" + m.Content + ">"
+	authorName := strings.Split(strings.Split(m.Content, "/status")[0], ".com/")[1]
 	author := "<" + strings.Split(m.Content, "/status")[0] + ">"
 	mention := fmt.Sprintf("<@%s>", m.Author.ID)
 	fxtwitterURL := strings.Replace(m.Content, "twitter.com", "fxtwitter.com", 1)
 	fxtwitterURL = strings.Replace(fxtwitterURL, "x.com", "fxtwitter.com", 1)
 
-	s := fmt.Sprintf("[Tweet](%s) • [Autor](%s) • [Fix](%s) • Enviado por %s ", tweet, author, fxtwitterURL, mention)
+	s := fmt.Sprintf("[Tweet](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", tweet, authorName, author, fxtwitterURL, mention)
 	return &s
 }
