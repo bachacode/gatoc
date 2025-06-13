@@ -20,7 +20,7 @@ var guildMemberAdd bot.Event = bot.Event{
 			channelID := ctx.MainChannelID
 			emoji := ctx.WelcomeEmoji
 			db := ctx.DB
-
+			mention := "<@" + r.User.ID + ">"
 			var wRoles []database.WelcomeRole
 			result := db.Find(&wRoles)
 
@@ -49,7 +49,7 @@ var guildMemberAdd bot.Event = bot.Event{
 					{
 						Title:       "qlq " + emoji + " 🍷",
 						Color:       0xFFFFFF,
-						Description: r.Member.DisplayName() + " acaba de cometer el error mas grande de su vida entrando a esta tierra profana.",
+						Description: mention + " acaba de cometer el error mas grande de su vida entrando a esta tierra profana.",
 						Image: &discordgo.MessageEmbedImage{
 							URL: "https://media.tenor.com/eH-RoS91Q1gAAAAC/cat.gif",
 						},

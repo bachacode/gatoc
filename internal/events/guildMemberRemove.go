@@ -23,31 +23,32 @@ var guildMemberRemove bot.Event = bot.Event{
 	Handler: func(ctx *bot.BotContext) interface{} {
 		return func(s *discordgo.Session, r *discordgo.GuildMemberRemove) {
 			channelID := ctx.MainChannelID
-			var messages []LeaveMessage = make([]LeaveMessage, 2)
-
-			messages = append(messages, LeaveMessage{
-				embed: &discordgo.MessageEmbed{
-					Title:       "c lo acomodaron por las costillas <:sadcheems:869742943425151087>",
-					Color:       0xFFFFFF,
-					Description: r.Member.DisplayName() + " no aguanto la pela.",
-					Image: &discordgo.MessageEmbedImage{
-						URL: "https://media.tenor.com/ww56Kix_vM8AAAAC/seloacomodoporlascostillas.gif",
+			memberID := r.User.ID
+			mention := "<@" + memberID + ">"
+			messages := []LeaveMessage{
+				{
+					embed: &discordgo.MessageEmbed{
+						Title:       "c lo acomodaron por las costillas <:sadcheems:869742943425151087>",
+						Color:       0xFFFFFF,
+						Description: mention + " no aguanto la pela.",
+						Image: &discordgo.MessageEmbedImage{
+							URL: "https://media.tenor.com/ww56Kix_vM8AAAAC/seloacomodoporlascostillas.gif",
+						},
 					},
+					filename: "chavez.gif",
 				},
-				filename: "chavez.gif",
-			})
-
-			messages = append(messages, LeaveMessage{
-				embed: &discordgo.MessageEmbed{
-					Title:       "c le fue la luz <:sadcheems:869742943425151087>",
-					Color:       0xFFFFFF,
-					Description: r.Member.DisplayName() + " no aguanto la pela.",
-					Image: &discordgo.MessageEmbedImage{
-						URL: "https://media.tenor.com/vHMD9o7RmfYAAAAC/snake-salute.gif",
+				{
+					embed: &discordgo.MessageEmbed{
+						Title:       "c le fue la luz <:sadcheems:869742943425151087>",
+						Color:       0xFFFFFF,
+						Description: mention + " no aguanto la pela.",
+						Image: &discordgo.MessageEmbedImage{
+							URL: "https://media.tenor.com/vHMD9o7RmfYAAAAC/snake-salute.gif",
+						},
 					},
+					filename: "snake.gif",
 				},
-				filename: "snake.gif",
-			})
+			}
 
 			randNumber := rand.Intn(len(messages))
 
