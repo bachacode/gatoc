@@ -23,11 +23,12 @@ type BotConfig struct {
 }
 
 type DbConfig struct {
-	DbHost string
-	DbUser string
-	DbPass string
-	DbName string
-	DbPort string
+	DbHost  string
+	DbUser  string
+	DbPass  string
+	DbName  string
+	DbPort  string
+	SslMode string
 }
 
 func init() {
@@ -49,11 +50,12 @@ func LoadConfig() *Config {
 			GoodbyeEmoji:  getEnv("GOODBYE_EMOJI", ""),
 		},
 		DbConfig: &DbConfig{
-			DbHost: getEnv("DB_HOST", "localhost"),
-			DbUser: getEnv("DB_USER", "user"),
-			DbPass: getEnv("DB_PASS", ""),
-			DbName: getEnv("DB_NAME", "discord-bot"),
-			DbPort: getEnv("DB_PORT", "5432"),
+			DbHost:  getEnv("DB_HOST", "localhost"),
+			DbUser:  getEnv("DB_USER", "user"),
+			DbPass:  getEnv("DB_PASS", ""),
+			DbName:  getEnv("DB_NAME", "discord-bot"),
+			DbPort:  getEnv("DB_PORT", "5432"),
+			SslMode: getEnv("SSL_MODE", "disable"),
 		},
 	}
 
