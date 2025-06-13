@@ -55,7 +55,7 @@ func LoadConfig() *Config {
 			DbPass:  getEnv("DB_PASS", ""),
 			DbName:  getEnv("DB_NAME", "discord-bot"),
 			DbPort:  getEnv("DB_PORT", "5432"),
-			SslMode: getEnv("SSL_MODE", "disable"),
+			SslMode: getEnv("DB_SSL", "disable"),
 		},
 	}
 
