@@ -1,5 +1,5 @@
-# --- STAGE 1: Builder (Builds the Go binary) ---
-FROM golang:1.24-alpine as builder
+# --- STAGE 1: Base (Copy the source code and install packages) ---
+FROM golang:1.24-alpine as base
 
 WORKDIR /app
 
@@ -8,20 +8,24 @@ RUN go mod download
 
 COPY . ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o ./bot ./cmd/bot/main.go
-
-# --- STAGE 2: Development Runtime (Includes 'air' for hot-reloading) ---
-FROM builder as dev
+# --- STAGE 2: Development Runtime (Includes and run 'air'for hot-reloading) ---
+FROM base as dev
 
 RUN go install github.com/air-verse/air@latest
 
 CMD ["air", "-c", ".air.toml"]
 
-# --- STAGE 3: Production Runtime (Minimal, only the compiled binary) ---
+# --- STAGE 3: Build stage (Compiles the go binary) ---
+FROM base AS build
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o bot ./cmd/bot/main.go
+
+# --- STAGE 4: Production Runtime (Minimal, only the compiled binary) ---
 FROM scratch as prod
 
 WORKDIR /app
 
-COPY --from=builder /app/bot .
+COPY --from=build /app/bot .
+COPY .env .
 
 CMD ["/app/bot"]
