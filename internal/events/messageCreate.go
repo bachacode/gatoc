@@ -69,6 +69,18 @@ var messageCreate bot.Event = bot.Event{
 				}
 			}
 
+			isDDinstagram := strings.Contains(m.Content, "ddinstagram.com")
+			isInstagram := strings.Contains(m.Content, "instagram.com")
+			hasPPath := strings.Contains(m.Content, "/p/")
+			if !isDDinstagram && isInstagram && hasPPath {
+				fixedMessage = fixInstagramEmbed(m)
+				messageEdit = &discordgo.MessageEdit{
+					ID:      m.ID,
+					Channel: m.ChannelID,
+					Flags:   discordgo.MessageFlagsSuppressEmbeds,
+				}
+			}
+
 			if messageEdit != nil {
 				// Supress embeds
 				if _, err := s.ChannelMessageEditComplex(messageEdit); err != nil {
@@ -132,5 +144,19 @@ func fixRedditEmbed(m *discordgo.MessageCreate) *string {
 	vxredditURL := strings.Replace(url, "reddit.com", "vxreddit.com", 1)
 
 	s := fmt.Sprintf("[Reddit](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", redditURL, authorName, author, vxredditURL, mention)
+	return &s
+}
+
+func fixInstagramEmbed(m *discordgo.MessageCreate) *string {
+	// Regex pattern to match a URL
+	re := regexp.MustCompile(`https?://[^\s]+`)
+	// Find the first URL match
+	url := re.FindString(m.Content)
+
+	instagramURL := "<" + url + ">"
+	mention := fmt.Sprintf("<@%s>", m.Author.ID)
+	ddinstagramURL := strings.Replace(url, "instagram.com", "ddinstagram.com", 1)
+
+	s := fmt.Sprintf("[Instagram](%s) • [Fix](%s) • Enviado por %s ", instagramURL, ddinstagramURL, mention)
 	return &s
 }
