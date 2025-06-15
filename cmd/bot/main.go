@@ -33,7 +33,8 @@ func main() {
 			discordgo.IntentsGuildVoiceStates |
 			discordgo.IntentsMessageContent |
 			discordgo.IntentGuildMessages |
-			discordgo.IntentsGuildMembers,
+			discordgo.IntentsGuildMembers |
+			discordgo.IntentsGuildMessageReactions,
 	)
 	bb.WithLogger(logger)
 	bot, err := bb.Build()
