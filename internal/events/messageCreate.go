@@ -71,7 +71,7 @@ var messageCreate bot.Event = bot.Event{
 
 			isDDinstagram := strings.Contains(m.Content, "ddinstagram.com")
 			isInstagram := strings.Contains(m.Content, "instagram.com")
-			hasReelPath := strings.Contains(m.Content, "/p/") || strings.Contains(m.Content, "/reel/")
+			hasReelPath := strings.Contains(m.Content, "/p/") || strings.Contains(m.Content, "/reel/") || strings.Contains(m.Content, "/reels/")
 			if !isDDinstagram && isInstagram && hasReelPath {
 				fixedMessage = fixInstagramEmbed(m)
 				messageEdit = &discordgo.MessageEdit{
