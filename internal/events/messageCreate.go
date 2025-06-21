@@ -44,7 +44,7 @@ var messageCreate bot.Event = bot.Event{
 
 			var messageEdit *discordgo.MessageEdit
 			var fixedMessage *string
-			isFxtwitter := strings.Contains(m.Content, "fxtwitter.com")
+			isFxtwitter := strings.Contains(m.Content, "fxtwitter.com") && strings.Contains(m.Content, "vxtwitter.com")
 			isTwitterOrX := strings.Contains(m.Content, "twitter.com") || strings.Contains(m.Content, "x.com")
 			hasStatusPath := strings.Contains(m.Content, "/status/")
 
