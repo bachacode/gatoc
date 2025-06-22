@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	"github.com/bachacode/go-discord-bot/internal/config"
+	"github.com/bachacode/gatoc/internal/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

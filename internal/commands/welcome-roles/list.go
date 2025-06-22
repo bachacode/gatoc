@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bachacode/go-discord-bot/internal/bot"
-	"github.com/bachacode/go-discord-bot/internal/database"
+	"github.com/bachacode/gatoc/internal/bot"
+	"github.com/bachacode/gatoc/internal/database"
 	"github.com/bwmarrin/discordgo"
 )
 

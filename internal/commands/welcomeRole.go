@@ -3,8 +3,8 @@ package commands
 import (
 	"fmt"
 
-	"github.com/bachacode/go-discord-bot/internal/bot"
-	subcommands "github.com/bachacode/go-discord-bot/internal/commands/welcome-roles"
+	"github.com/bachacode/gatoc/internal/bot"
+	subcommands "github.com/bachacode/gatoc/internal/commands/welcome-roles"
 	"github.com/bwmarrin/discordgo"
 )
 

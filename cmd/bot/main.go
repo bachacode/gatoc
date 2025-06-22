@@ -4,11 +4,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/bachacode/go-discord-bot/internal/bot"
-	_ "github.com/bachacode/go-discord-bot/internal/commands"
-	"github.com/bachacode/go-discord-bot/internal/config"
-	"github.com/bachacode/go-discord-bot/internal/database"
-	_ "github.com/bachacode/go-discord-bot/internal/events"
+	"github.com/bachacode/gatoc/internal/bot"
+	_ "github.com/bachacode/gatoc/internal/commands"
+	"github.com/bachacode/gatoc/internal/config"
+	"github.com/bachacode/gatoc/internal/database"
+	_ "github.com/bachacode/gatoc/internal/events"
 	"github.com/bwmarrin/discordgo"
 )
 

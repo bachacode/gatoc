@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/bachacode/go-discord-bot/internal/bot"
+	"github.com/bachacode/gatoc/internal/bot"
 	"github.com/bwmarrin/discordgo"
 )
 

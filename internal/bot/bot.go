@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/bachacode/go-discord-bot/internal/config"
+	"github.com/bachacode/gatoc/internal/config"
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 )
