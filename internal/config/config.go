@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strings"
 )
 
 type Config struct {
@@ -51,8 +52,19 @@ func LoadConfig() *Config {
 }
 
 func getEnv(key, fallback string) string {
-	if value, exists := os.LookupEnv(key); exists {
+	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
-	return fallback
+
+	file, ok := os.LookupEnv(key + "_FILE")
+	if !ok {
+		return fallback
+	}
+
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return fallback
+	}
+
+	return strings.TrimSpace(string(data))
 }
