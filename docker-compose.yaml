@@ -1,5 +1,5 @@
 services:
   bot:
-    image: ghcr.io/bachacode/gatoc-bot:latest
+    image: ghcr.io/bachacode/gatoc-bot:${GIT_COMMIT_HASH:-latest}
     env_file:
       - .env.production
