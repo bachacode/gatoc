@@ -36,8 +36,8 @@ func LoadConfig() *Config {
 			ClientID:      getEnv("CLIENT_ID", ""),
 			GuildID:       getEnv("GUILD_ID", ""),
 			MainChannelID: getEnv("MAIN_CHANNEL_ID", ""),
-			WelcomeEmoji:  getEnv("WELCOME_EMOJI", ""),
-			GoodbyeEmoji:  getEnv("GOODBYE_EMOJI", ""),
+			WelcomeEmoji:  getEnv("WELCOME_EMOJI", "<:gatoc:1356257759850663976>"),
+			GoodbyeEmoji:  getEnv("GOODBYE_EMOJI", "<:sadcheems:1383154335675973834>"),
 		},
 		DbConfig: &DbConfig{
 			DbHost:  getEnv("DB_HOST", "localhost"),
