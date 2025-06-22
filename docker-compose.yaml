@@ -1,27 +1,25 @@
 services:
   db:
     image: postgres:latest
-    restart: always
     environment:
       POSTGRES_DB: discordbot
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     volumes:
       - db_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   bot:
     build:
-      context: .
-      target: dev
+      context: ghcr.io/bachacode/gatoc-bot:latest
     depends_on:
       - db
     env_file:
       - .env
-    # Important to bind/mount your codebase dir to /app dir for live reload
-    volumes:
-      - ./:/app
 
 volumes:
   db_data:
