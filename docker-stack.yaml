@@ -1,0 +1,49 @@
+services:
+  bot:
+    image: ghcr.io/bachacode/gatoc-bot:${GIT_COMMIT_HASH:-latest}
+    secrets:
+      - token
+      - client-id
+      - guild-id
+      - main-channel-id
+      - db-host
+      - db-user
+      - db-pass
+      - db-name
+    environment:
+      - TOKEN_FILE=/run/secrets/token
+      - CLIENT_ID_FILE=/run/secrets/client-id
+      - GUILD_ID_FILE=/run/secrets/guild-id
+      - MAIN_CHANNEL_ID_FILE=/run/secrets/main-channel-id
+      - DB_HOST_FILE=/run/secrets/db-host
+      - DB_USER_FILE=/run/secrets/db-user
+      - DB_PASS_FILE=/run/secrets/db-pass
+      - DB_NAME_FILE=/run/secrets/db-name
+      - DB_PORT=5432
+      - DB_SSL=require
+    deploy:
+      update_config:
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+secrets:
+  token:
+    external: true
+  client-id:
+    external: true
+  guild-id:
+    external: true
+  main-channel-id:
+    external: true
+  db-host:
+    external: true
+  db-user:
+    external: true
+  db-pass:
+    external: true
+  db-name:
+    external: true

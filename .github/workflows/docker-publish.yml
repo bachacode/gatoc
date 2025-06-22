@@ -29,3 +29,17 @@ jobs:
           tags: |
             ghcr.io/bachacode/gatoc-bot:latest
             ghcr.io/bachacode/gatoc-bot:${{ github.sha }}
+
+      - name: create env file
+        run: |
+          echo "GIT_COMMIT_HASH=${{ github.sha }}" >> ./envfile
+
+      - name: Docker Stack Deploy
+        uses: cssnr/stack-deploy-action@v1
+        with:
+          name: gatoc
+          file: docker-stack.yaml
+          host: ${{ secrets.DEPLOY_HOST }}
+          user: deploy
+          ssh_key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          env_file: ./envfile
