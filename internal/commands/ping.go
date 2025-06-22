@@ -23,7 +23,7 @@ var ping bot.SlashCommand = bot.SlashCommand{
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: fmt.Sprintf("GatoPong! V2 Latencia de %dms.", latency),
+				Content: fmt.Sprintf("GatoPong! Latencia de %dms.", latency),
 			},
 		})
 		if err != nil {
