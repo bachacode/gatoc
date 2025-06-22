@@ -1,10 +1,7 @@
 package config
 
 import (
-	"log"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -29,13 +26,6 @@ type DbConfig struct {
 	DbName  string
 	DbPort  string
 	SslMode string
-}
-
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 }
 
 func LoadConfig() *Config {
