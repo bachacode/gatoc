@@ -5,7 +5,6 @@ import (
 )
 
 type Config struct {
-	AppEnv string
 	*BotConfig
 	*DbConfig
 }
@@ -30,7 +29,6 @@ type DbConfig struct {
 
 func LoadConfig() *Config {
 	cfg := &Config{
-		AppEnv: getEnv("APP_ENV", "development"),
 		BotConfig: &BotConfig{
 			Token:         getEnv("TOKEN", ""),
 			ClientID:      getEnv("CLIENT_ID", ""),
