@@ -20,10 +20,27 @@ var ping bot.SlashCommand = bot.SlashCommand{
 		latency := s.HeartbeatLatency().Milliseconds()
 
 		// Follow up with the actual latency
+		embed := &discordgo.MessageEmbed{
+			Title: "🏓 | GatoPong!",
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:   "GatoLatencia",
+					Value:  fmt.Sprintf("```fix\n⚡ | %d\n```", latency),
+					Inline: true,
+				},
+				{
+					Name:   "GatoVersión",
+					Value:  "```fix\n1.0.0```",
+					Inline: true,
+				},
+			},
+		}
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: fmt.Sprintf("GatoPong! Latencia de %dms.", latency),
+				Embeds: []*discordgo.MessageEmbed{
+					embed,
+				},
 			},
 		})
 		if err != nil {
