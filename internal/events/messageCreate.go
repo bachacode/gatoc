@@ -114,49 +114,46 @@ func areMessagesRepeated(messages []*discordgo.Message, max int) bool {
 	return messageCount >= max
 }
 
-func fixTwitterEmbed(m *discordgo.MessageCreate) *string {
-	// Regex pattern to match a URL
+func fixUrlEmbed(m *discordgo.MessageCreate) (string, string) {
 	re := regexp.MustCompile(`https?://[^\s]+`)
-	// Find the first URL match
-	url := re.FindString(m.Content)
 
-	tweet := "<" + url + ">"
+	url := re.FindString(m.Content)
+	originalSupressedUrl := "<" + url + ">"
+
+	return url, originalSupressedUrl
+}
+
+func fixTwitterEmbed(m *discordgo.MessageCreate) *string {
+	url, fixedUrl := fixUrlEmbed(m)
+
 	authorName := strings.Split(strings.Split(url, "/status")[0], ".com/")[1]
 	author := "<" + strings.Split(url, "/status")[0] + ">"
 	mention := fmt.Sprintf("<@%s>", m.Author.ID)
 	fxtwitterURL := strings.Replace(url, "twitter.com", "fxtwitter.com", 1)
 	fxtwitterURL = strings.Replace(fxtwitterURL, "x.com", "fxtwitter.com", 1)
 
-	s := fmt.Sprintf("[Tweet](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", tweet, authorName, author, fxtwitterURL, mention)
+	s := fmt.Sprintf("[Tweet](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", fixedUrl, authorName, author, fxtwitterURL, mention)
 	return &s
 }
 
 func fixRedditEmbed(m *discordgo.MessageCreate) *string {
-	// Regex pattern to match a URL
-	re := regexp.MustCompile(`https?://[^\s]+`)
-	// Find the first URL match
-	url := re.FindString(m.Content)
+	url, fixedUrl := fixUrlEmbed(m)
 
-	redditURL := "<" + url + ">"
 	authorName := strings.Split(strings.Split(url, "/comments")[0], "r/")[1]
 	author := "<" + strings.Split(url, "/comments")[0] + ">"
 	mention := fmt.Sprintf("<@%s>", m.Author.ID)
 	vxredditURL := strings.Replace(url, "reddit.com", "vxreddit.com", 1)
 
-	s := fmt.Sprintf("[Reddit](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", redditURL, authorName, author, vxredditURL, mention)
+	s := fmt.Sprintf("[Reddit](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", fixedUrl, authorName, author, vxredditURL, mention)
 	return &s
 }
 
 func fixInstagramEmbed(m *discordgo.MessageCreate) *string {
-	// Regex pattern to match a URL
-	re := regexp.MustCompile(`https?://[^\s]+`)
-	// Find the first URL match
-	url := re.FindString(m.Content)
+	url, fixedUrl := fixUrlEmbed(m)
 
-	instagramURL := "<" + url + ">"
 	mention := fmt.Sprintf("<@%s>", m.Author.ID)
 	ddinstagramURL := strings.Replace(url, "instagram.com", "ddinstagram.com", 1)
 
-	s := fmt.Sprintf("[Instagram](%s) • [Fix](%s) • Enviado por %s ", instagramURL, ddinstagramURL, mention)
+	s := fmt.Sprintf("[Instagram](%s) • [Fix](%s) • Enviado por %s ", fixedUrl, ddinstagramURL, mention)
 	return &s
 }
