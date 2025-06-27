@@ -25,12 +25,12 @@ var ping bot.SlashCommand = bot.SlashCommand{
 			Fields: []*discordgo.MessageEmbedField{
 				{
 					Name:   "GatoLatencia",
-					Value:  fmt.Sprintf("```fix\n⚡ | %d\n```", latency),
+					Value:  fmt.Sprintf("```fix\n⚡ | %dms\n```", latency),
 					Inline: true,
 				},
 				{
 					Name:   "GatoVersión",
-					Value:  "```fix\n1.0.1\n```",
+					Value:  "```fix\n1.0.2\n```",
 					Inline: true,
 				},
 			},
