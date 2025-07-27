@@ -13,8 +13,6 @@ func init() {
 	bot.RegisterEvent(messageCreate)
 }
 
-var messageCount int = 0
-
 var messageCreate bot.Event = bot.Event{
 	Name: "Message Create",
 	Once: false,
@@ -25,25 +23,17 @@ var messageCreate bot.Event = bot.Event{
 			}
 
 			channelID := m.ChannelID
-			messages, err := s.ChannelMessages(channelID, 2, "", "", "")
+			maxMessages := 3
+			messageCount := 0
+			err := handleRepeated(channelID, maxMessages, &messageCount, s)
 
 			if err != nil {
-				ctx.Logger.Printf("Failed to get message history from channel: %v", err)
-				return
-			}
-
-			// Repeat message if last 3 messages are the same
-			if areMessagesRepeated(messages, 2) {
-				messageCount = 0
-				_, err := s.ChannelMessageSend(channelID, messages[len(messages)-1].Content)
-				if err != nil {
-					ctx.Logger.Printf("Failed to send message: %v", err)
-					return
-				}
+				ctx.Logger.Printf("Failed to repeat messages: %v", err)
 			}
 
 			var messageEdit *discordgo.MessageEdit
 			var fixedMessage *string
+
 			isFxtwitter := strings.Contains(m.Content, "fxtwitter.com") || strings.Contains(m.Content, "vxtwitter.com")
 			isTwitterOrX := strings.Contains(m.Content, "twitter.com") || strings.Contains(m.Content, "x.com")
 			hasStatusPath := strings.Contains(m.Content, "/status/")
@@ -103,15 +93,35 @@ var messageCreate bot.Event = bot.Event{
 	},
 }
 
-func areMessagesRepeated(messages []*discordgo.Message, max int) bool {
-	if strings.ToLower(messages[0].Content) == strings.ToLower(messages[1].Content) &&
-		(messages[0].Author.GlobalName != messages[1].Author.GlobalName) {
-		messageCount++
-	} else {
-		messageCount = 0
+func handleRepeated(channelID string, max int, messageCount *int, s *discordgo.Session) error {
+	messages, err := s.ChannelMessages(channelID, 2, "", "", "")
+	if err != nil {
+		return err
 	}
 
-	return messageCount >= max
+	if len(messages) == 0 {
+		return fmt.Errorf("Failed to get enough messages from message history")
+	}
+
+	isSameMessage := strings.ToLower(messages[0].Content) == strings.ToLower(messages[1].Content)
+	// isDifferentAuthor := messages[0].Author.GlobalName != messages[1].Author.GlobalName
+	if isSameMessage {
+		fmt.Println("same!")
+		*messageCount++
+	} else {
+		fmt.Println("not same!")
+		*messageCount = 0
+	}
+
+	if *messageCount >= max-1 {
+		*messageCount = 0
+		_, err := s.ChannelMessageSend(channelID, messages[len(messages)-1].Content)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func fixUrlEmbed(m *discordgo.MessageCreate) (string, string) {
