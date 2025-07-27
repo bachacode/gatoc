@@ -2,6 +2,7 @@ package events
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -26,68 +27,13 @@ var messageCreate bot.Event = bot.Event{
 
 			channelID := m.ChannelID
 			maxMessages := 3
-			err := handleRepeated(channelID, maxMessages, s)
 
-			if err != nil {
+			if err := handleRepeated(channelID, maxMessages, s); err != nil {
 				ctx.Logger.Printf("Failed to repeat messages: %v", err)
 			}
 
-			var messageEdit *discordgo.MessageEdit
-			var fixedMessage *string
-
-			isFxtwitter := strings.Contains(m.Content, "fxtwitter.com") || strings.Contains(m.Content, "vxtwitter.com")
-			isTwitterOrX := strings.Contains(m.Content, "twitter.com") || strings.Contains(m.Content, "x.com")
-			hasStatusPath := strings.Contains(m.Content, "/status/")
-
-			if !isFxtwitter && isTwitterOrX && hasStatusPath {
-				fixedMessage = fixTwitterEmbed(m)
-				messageEdit = &discordgo.MessageEdit{
-					ID:      m.ID,
-					Channel: m.ChannelID,
-					Flags:   discordgo.MessageFlagsSuppressEmbeds,
-				}
-			}
-
-			isVxreddit := strings.Contains(m.Content, "vxreddit.com")
-			isReddit := strings.Contains(m.Content, "reddit.com")
-			hasCommentsPath := strings.Contains(m.Content, "/comments/")
-			if !isVxreddit && isReddit && hasCommentsPath {
-				fixedMessage = fixRedditEmbed(m)
-				messageEdit = &discordgo.MessageEdit{
-					ID:      m.ID,
-					Channel: m.ChannelID,
-					Flags:   discordgo.MessageFlagsSuppressEmbeds,
-				}
-			}
-
-			isDDinstagram := strings.Contains(m.Content, "ddinstagram.com")
-			isInstagram := strings.Contains(m.Content, "instagram.com")
-			hasReelPath := strings.Contains(m.Content, "/p/") || strings.Contains(m.Content, "/reel/") || strings.Contains(m.Content, "/reels/")
-			if !isDDinstagram && isInstagram && hasReelPath {
-				fixedMessage = fixInstagramEmbed(m)
-				messageEdit = &discordgo.MessageEdit{
-					ID:      m.ID,
-					Channel: m.ChannelID,
-					Flags:   discordgo.MessageFlagsSuppressEmbeds,
-				}
-			}
-
-			if messageEdit != nil {
-				// Supress embeds
-				if _, err := s.ChannelMessageEditComplex(messageEdit); err != nil {
-					ctx.Logger.Printf("Failed to supress embeds from previous message: %v", err)
-					return
-				}
-
-				if _, err := s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
-					Content: *fixedMessage,
-					AllowedMentions: &discordgo.MessageAllowedMentions{
-						Parse: []discordgo.AllowedMentionType{},
-					},
-				}); err != nil {
-					ctx.Logger.Printf("Failed to send embedded message: %v", err)
-					return
-				}
+			if err := handleURLEmbed(s, m); err != nil {
+				ctx.Logger.Printf("Failed to fix message embed: %v", err)
 			}
 
 		}
@@ -123,6 +69,53 @@ func handleRepeated(channelID string, max int, s *discordgo.Session) error {
 	return nil
 }
 
+func handleURLEmbed(s *discordgo.Session, m *discordgo.MessageCreate) error {
+	url, err := url.ParseRequestURI(m.Content)
+	if err != nil {
+		return nil
+	}
+
+	trimmedHost := strings.ToLower(url.Host)
+	if strings.HasPrefix(trimmedHost, "www.") {
+		trimmedHost = strings.TrimPrefix(trimmedHost, "www.")
+	}
+
+	fixableHosts := map[string]func(m *discordgo.MessageCreate) string{
+		"twitter.com":   fixTwitterEmbed,
+		"x.com":         fixTwitterEmbed,
+		"reddit.com":    fixRedditEmbed,
+		"instagram.com": fixInstagramEmbed,
+	}
+
+	if handler, ok := fixableHosts[trimmedHost]; ok {
+		if (trimmedHost == "twitter.com" || trimmedHost == "x.com") && !strings.Contains(url.Path, "/status") {
+			return nil
+		}
+
+		fixedEmbedMessageContent := handler(m)
+
+		maxRetries := 3
+		for i := 0; i < maxRetries; i++ {
+			s.ChannelMessageEditComplex(&discordgo.MessageEdit{
+				ID:      m.ID,
+				Channel: m.ChannelID,
+				Flags:   discordgo.MessageFlagsSuppressEmbeds,
+			})
+		}
+
+		if _, err := s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+			Content: fixedEmbedMessageContent,
+			AllowedMentions: &discordgo.MessageAllowedMentions{
+				Parse: []discordgo.AllowedMentionType{},
+			},
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func fixUrlEmbed(m *discordgo.MessageCreate) (string, string) {
 	re := regexp.MustCompile(`https?://[^\s]+`)
 
@@ -132,7 +125,7 @@ func fixUrlEmbed(m *discordgo.MessageCreate) (string, string) {
 	return url, originalSupressedUrl
 }
 
-func fixTwitterEmbed(m *discordgo.MessageCreate) *string {
+func fixTwitterEmbed(m *discordgo.MessageCreate) string {
 	url, fixedUrl := fixUrlEmbed(m)
 
 	authorName := strings.Split(strings.Split(url, "/status")[0], ".com/")[1]
@@ -141,11 +134,11 @@ func fixTwitterEmbed(m *discordgo.MessageCreate) *string {
 	fxtwitterURL := strings.Replace(url, "twitter.com", "fxtwitter.com", 1)
 	fxtwitterURL = strings.Replace(fxtwitterURL, "x.com", "fxtwitter.com", 1)
 
-	s := fmt.Sprintf("[Tweet](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", fixedUrl, authorName, author, fxtwitterURL, mention)
-	return &s
+	fixedEmbedMessageContent := fmt.Sprintf("[Tweet](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", fixedUrl, authorName, author, fxtwitterURL, mention)
+	return fixedEmbedMessageContent
 }
 
-func fixRedditEmbed(m *discordgo.MessageCreate) *string {
+func fixRedditEmbed(m *discordgo.MessageCreate) string {
 	url, fixedUrl := fixUrlEmbed(m)
 
 	authorName := strings.Split(strings.Split(url, "/comments")[0], "r/")[1]
@@ -153,16 +146,16 @@ func fixRedditEmbed(m *discordgo.MessageCreate) *string {
 	mention := fmt.Sprintf("<@%s>", m.Author.ID)
 	vxredditURL := strings.Replace(url, "reddit.com", "vxreddit.com", 1)
 
-	s := fmt.Sprintf("[Reddit](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", fixedUrl, authorName, author, vxredditURL, mention)
-	return &s
+	fixedEmbedMessageContent := fmt.Sprintf("[Reddit](%s) • [%s](%s) • [Fix](%s) • Enviado por %s ", fixedUrl, authorName, author, vxredditURL, mention)
+	return fixedEmbedMessageContent
 }
 
-func fixInstagramEmbed(m *discordgo.MessageCreate) *string {
+func fixInstagramEmbed(m *discordgo.MessageCreate) string {
 	url, fixedUrl := fixUrlEmbed(m)
 
 	mention := fmt.Sprintf("<@%s>", m.Author.ID)
 	ddinstagramURL := strings.Replace(url, "instagram.com", "ddinstagram.com", 1)
 
-	s := fmt.Sprintf("[Instagram](%s) • [Fix](%s) • Enviado por %s ", fixedUrl, ddinstagramURL, mention)
-	return &s
+	fixedEmbedMessageContent := fmt.Sprintf("[Instagram](%s) • [Fix](%s) • Enviado por %s ", fixedUrl, ddinstagramURL, mention)
+	return fixedEmbedMessageContent
 }
