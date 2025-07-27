@@ -40,9 +40,9 @@ func LoadConfig() *Config {
 		},
 		DbConfig: &DbConfig{
 			DbHost:  getEnv("DB_HOST", "localhost"),
-			DbUser:  getEnv("DB_USER", "user"),
-			DbPass:  getEnv("DB_PASS", ""),
-			DbName:  getEnv("DB_NAME", "discord-bot"),
+			DbUser:  getEnv("DB_USER", "postgres"),
+			DbPass:  getEnv("DB_PASS", "password"),
+			DbName:  getEnv("DB_NAME", "discordbot"),
 			DbPort:  getEnv("DB_PORT", "5432"),
 			SslMode: getEnv("DB_SSL", "disable"),
 		},
