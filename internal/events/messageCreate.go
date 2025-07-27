@@ -13,6 +13,8 @@ func init() {
 	bot.RegisterEvent(messageCreate)
 }
 
+var messageCount = 0
+
 var messageCreate bot.Event = bot.Event{
 	Name: "Message Create",
 	Once: false,
@@ -24,8 +26,7 @@ var messageCreate bot.Event = bot.Event{
 
 			channelID := m.ChannelID
 			maxMessages := 3
-			messageCount := 0
-			err := handleRepeated(channelID, maxMessages, &messageCount, s)
+			err := handleRepeated(channelID, maxMessages, s)
 
 			if err != nil {
 				ctx.Logger.Printf("Failed to repeat messages: %v", err)
@@ -93,7 +94,7 @@ var messageCreate bot.Event = bot.Event{
 	},
 }
 
-func handleRepeated(channelID string, max int, messageCount *int, s *discordgo.Session) error {
+func handleRepeated(channelID string, max int, s *discordgo.Session) error {
 	messages, err := s.ChannelMessages(channelID, 2, "", "", "")
 	if err != nil {
 		return err
@@ -106,13 +107,13 @@ func handleRepeated(channelID string, max int, messageCount *int, s *discordgo.S
 	isSameMessage := strings.ToLower(messages[0].Content) == strings.ToLower(messages[1].Content)
 	isDifferentAuthor := messages[0].Author.GlobalName != messages[1].Author.GlobalName
 	if isSameMessage && isDifferentAuthor {
-		*messageCount++
+		messageCount++
 	} else {
-		*messageCount = 0
+		messageCount = 1
 	}
 
-	if *messageCount >= max-1 {
-		*messageCount = 0
+	if messageCount >= max {
+		messageCount = 0
 		_, err := s.ChannelMessageSend(channelID, messages[len(messages)-1].Content)
 		if err != nil {
 			return err
