@@ -1,5 +1,24 @@
 services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: discordbot
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
   bot:
-    image: ghcr.io/bachacode/gatoc-bot:${GIT_COMMIT_HASH:-latest}
+    build:
+      context: .
+      target: dev
+    depends_on:
+      - db
     env_file:
-      - .env.production
+      - .env
+    volumes:
+      - ./:/app
+
+volumes:
+  db_data:
