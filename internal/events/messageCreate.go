@@ -104,8 +104,8 @@ func handleRepeated(channelID string, max int, messageCount *int, s *discordgo.S
 	}
 
 	isSameMessage := strings.ToLower(messages[0].Content) == strings.ToLower(messages[1].Content)
-	// isDifferentAuthor := messages[0].Author.GlobalName != messages[1].Author.GlobalName
-	if isSameMessage {
+	isDifferentAuthor := messages[0].Author.GlobalName != messages[1].Author.GlobalName
+	if isSameMessage && isDifferentAuthor {
 		fmt.Println("same!")
 		*messageCount++
 	} else {
