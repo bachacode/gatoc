@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/bachacode/gatoc/internal/bot"
 	"github.com/bwmarrin/discordgo"
@@ -94,14 +95,18 @@ func handleURLEmbed(s *discordgo.Session, m *discordgo.MessageCreate) error {
 
 		fixedEmbedMessageContent := handler(m)
 
-		maxRetries := 3
-		for i := 0; i < maxRetries; i++ {
-			s.ChannelMessageEditComplex(&discordgo.MessageEdit{
-				ID:      m.ID,
-				Channel: m.ChannelID,
-				Flags:   discordgo.MessageFlagsSuppressEmbeds,
-			})
-		}
+		go func() {
+			maxRetries := 5
+			for i := 0; i < maxRetries; i++ {
+				s.ChannelMessageEditComplex(&discordgo.MessageEdit{
+					ID:      m.ID,
+					Channel: m.ChannelID,
+					Flags:   discordgo.MessageFlagsSuppressEmbeds,
+				})
+
+				time.Sleep(300 * time.Millisecond)
+			}
+		}()
 
 		if _, err := s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
 			Content: fixedEmbedMessageContent,
