@@ -71,7 +71,15 @@ func handleRepeated(channelID string, max int, s *discordgo.Session) error {
 }
 
 func handleURLEmbed(s *discordgo.Session, m *discordgo.MessageCreate) error {
-	url, err := url.ParseRequestURI(m.Content)
+	re := regexp.MustCompile(`https?://[^\s]+`)
+
+	urlToParse := re.FindString(m.Content)
+
+	if urlToParse == "" {
+		return nil
+	}
+
+	url, err := url.ParseRequestURI(urlToParse)
 	if err != nil {
 		return nil
 	}
@@ -81,7 +89,7 @@ func handleURLEmbed(s *discordgo.Session, m *discordgo.MessageCreate) error {
 		trimmedHost = strings.TrimPrefix(trimmedHost, "www.")
 	}
 
-	fixableHosts := map[string]func(m *discordgo.MessageCreate) string{
+	fixableHosts := map[string]func(m *discordgo.MessageCreate, url string, fixedUrl string) string{
 		"twitter.com":   fixTwitterEmbed,
 		"x.com":         fixTwitterEmbed,
 		"reddit.com":    fixRedditEmbed,
@@ -93,7 +101,8 @@ func handleURLEmbed(s *discordgo.Session, m *discordgo.MessageCreate) error {
 			return nil
 		}
 
-		fixedEmbedMessageContent := handler(m)
+		supressedUrl := "<" + urlToParse + ">"
+		fixedEmbedMessageContent := handler(m, urlToParse, supressedUrl)
 
 		go func() {
 			maxRetries := 5
@@ -121,18 +130,7 @@ func handleURLEmbed(s *discordgo.Session, m *discordgo.MessageCreate) error {
 	return nil
 }
 
-func fixUrlEmbed(m *discordgo.MessageCreate) (string, string) {
-	re := regexp.MustCompile(`https?://[^\s]+`)
-
-	url := re.FindString(m.Content)
-	originalSupressedUrl := "<" + url + ">"
-
-	return url, originalSupressedUrl
-}
-
-func fixTwitterEmbed(m *discordgo.MessageCreate) string {
-	url, fixedUrl := fixUrlEmbed(m)
-
+func fixTwitterEmbed(m *discordgo.MessageCreate, url string, fixedUrl string) string {
 	authorName := strings.Split(strings.Split(url, "/status")[0], ".com/")[1]
 	author := "<" + strings.Split(url, "/status")[0] + ">"
 	mention := fmt.Sprintf("<@%s>", m.Author.ID)
@@ -143,9 +141,7 @@ func fixTwitterEmbed(m *discordgo.MessageCreate) string {
 	return fixedEmbedMessageContent
 }
 
-func fixRedditEmbed(m *discordgo.MessageCreate) string {
-	url, fixedUrl := fixUrlEmbed(m)
-
+func fixRedditEmbed(m *discordgo.MessageCreate, url string, fixedUrl string) string {
 	authorName := strings.Split(strings.Split(url, "/comments")[0], "r/")[1]
 	author := "<" + strings.Split(url, "/comments")[0] + ">"
 	mention := fmt.Sprintf("<@%s>", m.Author.ID)
@@ -155,9 +151,7 @@ func fixRedditEmbed(m *discordgo.MessageCreate) string {
 	return fixedEmbedMessageContent
 }
 
-func fixInstagramEmbed(m *discordgo.MessageCreate) string {
-	url, fixedUrl := fixUrlEmbed(m)
-
+func fixInstagramEmbed(m *discordgo.MessageCreate, url string, fixedUrl string) string {
 	mention := fmt.Sprintf("<@%s>", m.Author.ID)
 	ddinstagramURL := strings.Replace(url, "instagram.com", "ddinstagram.com", 1)
 
