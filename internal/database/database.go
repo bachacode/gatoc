@@ -18,6 +18,7 @@ type WelcomeRole struct {
 type ResponseMessage struct {
 	gorm.Model
 	GuildID  string
+	Message  string
 	Response string
 	UserID   *string
 }
