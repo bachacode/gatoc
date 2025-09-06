@@ -46,7 +46,7 @@ var Delete bot.SlashSubcommand = bot.SlashSubcommand{
 			return fmt.Errorf("Error responding to interaction\n")
 		}
 
-		if result := db.Delete(&database.WelcomeRole{}, responseID); result.Error != nil {
+		if result := db.Delete(&database.ResponseMessage{}, responseID); result.Error != nil {
 			content = "Ha ocurrido un error al eliminar el mensaje de respuesta"
 			bot.EditDeferred(s, i, content)
 			return fmt.Errorf("Error deleting welcome role: %s\n%v", responseID, result.Error)
