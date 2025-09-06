@@ -1,4 +1,4 @@
-package welcomeroles
+package responsemessages
 
 import (
 	"fmt"
