@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/bachacode/gatoc/internal/bot"
+	"github.com/bachacode/gatoc/internal/database"
 	"github.com/bwmarrin/discordgo"
+	"gorm.io/gorm"
 )
 
 func init() {
@@ -29,6 +31,10 @@ var messageCreate bot.Event = bot.Event{
 			channelID := m.ChannelID
 			maxMessages := 3
 
+			if err := HandleResponses(s, m, ctx.DB); err != nil {
+				ctx.Logger.Printf("Failed to respond to message: %v", err)
+			}
+
 			if err := handleRepeated(channelID, maxMessages, s); err != nil {
 				ctx.Logger.Printf("Failed to repeat messages: %v", err)
 			}
@@ -39,6 +45,38 @@ var messageCreate bot.Event = bot.Event{
 
 		}
 	},
+}
+
+func HandleResponses(s *discordgo.Session, m *discordgo.MessageCreate, db *gorm.DB) error {
+	var response database.ResponseMessage
+	result := db.Where("message = ?", strings.ToLower(m.Content)).First(&response)
+
+	if result.Error != nil {
+		fmt.Printf("Failed to get response message: %v\n", result.Error)
+		return result.Error
+	}
+
+	if result.RowsAffected < 1 {
+		return nil
+	}
+
+	if response.UserID != nil && *response.UserID != m.Author.ID {
+		return nil
+	}
+
+	msg := &discordgo.MessageSend{
+		Content: response.Response,
+	}
+
+	if response.UserID != nil && *response.UserID == m.Author.ID {
+		msg.Reference = m.Reference()
+	}
+
+	if _, err := s.ChannelMessageSendComplex(m.ChannelID, msg); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func handleRepeated(channelID string, max int, s *discordgo.Session) error {
